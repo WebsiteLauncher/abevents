@@ -29,22 +29,40 @@ body{background:var(--bg);color:var(--t1);font-family:var(--fb);font-size:14px;f
 ::-webkit-scrollbar-track{background:transparent;}
 ::-webkit-scrollbar-thumb{background:var(--s4);border-radius:4px;}
 
-/* ═══ LOGIN ═══ */
-#loginScreen{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;align-items:center;justify-content:center;}
+/* ═══ LOGIN / AUTH SCREEN ═══ */
+#loginScreen{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;align-items:center;justify-content:center;overflow-y:auto;padding:20px;}
 #loginScreen.gone{display:none;}
-.login-wrap{width:100%;max-width:400px;padding:24px;}
+.login-wrap{width:100%;max-width:440px;}
 .login-logo{font-family:var(--fh);font-size:1.2rem;font-weight:700;color:var(--gold);margin-bottom:4px;}
-.login-sub{font-size:.8rem;color:var(--t3);margin-bottom:32px;}
-.login-chip{display:inline-flex;align-items:center;gap:6px;background:var(--gold-a);border:1px solid rgba(201,168,76,.22);padding:5px 12px;border-radius:100px;font-size:.68rem;color:var(--gold);letter-spacing:.08em;margin-bottom:24px;}
-.lf-group{margin-bottom:16px;}
+.login-sub{font-size:.8rem;color:var(--t3);margin-bottom:28px;}
+.login-chip{display:inline-flex;align-items:center;gap:6px;background:var(--gold-a);border:1px solid rgba(201,168,76,.22);padding:5px 12px;border-radius:100px;font-size:.68rem;color:var(--gold);letter-spacing:.08em;margin-bottom:22px;}
+/* Auth tabs */
+.auth-tabs{display:flex;background:var(--s2);border-radius:var(--r);padding:3px;gap:3px;margin-bottom:24px;}
+.auth-tab{flex:1;padding:9px 6px;text-align:center;font-size:.73rem;font-weight:600;cursor:pointer;border-radius:6px;transition:var(--tr);color:var(--t2);background:transparent;border:none;font-family:var(--fh);letter-spacing:.04em;}
+.auth-tab.active{background:var(--gold);color:#000;}
+.auth-panel{display:none;}
+.auth-panel.active{display:block;}
+/* Form elements */
+.lf-group{margin-bottom:14px;}
 .lf-label{display:block;font-size:.7rem;font-weight:500;color:var(--t2);margin-bottom:5px;letter-spacing:.04em;text-transform:uppercase;}
 .lf-input{width:100%;background:var(--s2);border:1px solid var(--bdr);color:var(--t1);padding:11px 14px;border-radius:var(--r);font-family:var(--fb);font-size:.875rem;outline:none;transition:var(--tr);}
 .lf-input:focus{border-color:rgba(201,168,76,.4);box-shadow:0 0 0 3px rgba(201,168,76,.08);}
-.lbtn{width:100%;background:var(--gold);color:#000;padding:12px;border-radius:var(--r);font-family:var(--fh);font-weight:700;font-size:.85rem;cursor:pointer;border:none;transition:var(--tr);letter-spacing:.04em;}
+.lf-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.lbtn{width:100%;background:var(--gold);color:#000;padding:12px;border-radius:var(--r);font-family:var(--fh);font-weight:700;font-size:.85rem;cursor:pointer;border:none;transition:var(--tr);letter-spacing:.04em;margin-top:4px;}
 .lbtn:hover{background:#D4B05C;}
 .l-err{font-size:.75rem;color:var(--red);margin-top:8px;min-height:16px;}
+.l-ok{font-size:.75rem;color:var(--green);margin-top:8px;min-height:16px;}
 .l-hint{font-size:.72rem;color:var(--t4);margin-top:16px;text-align:center;line-height:1.6;}
 .l-hint a{color:var(--gold);}
+/* Forgot link */
+.l-forgot-link{background:none;border:none;color:var(--gold);font-size:.73rem;cursor:pointer;font-family:var(--fb);display:inline-flex;align-items:center;gap:3px;margin-top:10px;opacity:.8;transition:var(--tr);padding:0;}
+.l-forgot-link:hover{opacity:1;}
+/* Divider */
+.l-divider{display:flex;align-items:center;gap:10px;margin:14px 0;color:var(--t4);font-size:.7rem;}
+.l-divider::before,.l-divider::after{content:'';flex:1;height:1px;background:var(--bdr);}
+/* Password strength */
+.pw-strength-bar{height:3px;border-radius:2px;margin-top:5px;background:var(--s4);transition:all .3s;}
+.pw-strength-hint{font-size:.68rem;margin-top:3px;min-height:14px;}
 
 /* ═══ LAYOUT ═══ */
 #sidebar{width:var(--sidebar-w);min-width:var(--sidebar-w);height:100vh;background:var(--s1);border-right:1px solid var(--bdr);display:flex;flex-direction:column;overflow:hidden;transition:var(--tr);flex-shrink:0;}
@@ -303,17 +321,72 @@ tr:hover td{background:rgba(255,255,255,.012);}
 </head>
 <body>
 
-<!-- ═══ LOGIN ═══ -->
+<!-- ═══ AUTH SCREEN — Login · Register · Forgot Password ═══ -->
 <div id="loginScreen">
   <div class="login-wrap">
     <div class="login-chip">⚡ Admin Portal</div>
     <div class="login-logo">AB Events & Decors</div>
-    <div class="login-sub">Sign in to your administration dashboard</div>
-    <div class="lf-group"><label class="lf-label">Admin Email</label><input class="lf-input" type="email" id="adEmail" placeholder="admin@abevents.in" autocomplete="username"/></div>
-    <div class="lf-group"><label class="lf-label">Password</label><input class="lf-input" type="password" id="adPwd" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')adminLogin()"/></div>
-    <button class="lbtn" onclick="adminLogin()">Sign In →</button>
-    <div class="l-err" id="loginErr"></div>
-    <div class="l-hint">Restricted to authorised administrators only.<br>Customer site: <a href="ab-events-customer.html">ab-events-customer.html ↗</a></div>
+    <div class="login-sub">Administration Dashboard</div>
+
+    <!-- TABS — hidden on Forgot panel -->
+    <div class="auth-tabs" id="adminAuthTabs">
+      <button class="auth-tab active" onclick="switchAdminTab('login')">Sign In</button>
+      <button class="auth-tab" onclick="switchAdminTab('register')">Register</button>
+    </div>
+
+    <!-- ── LOGIN PANEL ── -->
+    <div class="auth-panel active" id="adminLoginPanel">
+      <div class="lf-group">
+        <label class="lf-label">Admin Email</label>
+        <input class="lf-input" type="email" id="adEmail" placeholder="admin@abevents.in" autocomplete="username"/>
+      </div>
+      <div class="lf-group">
+        <label class="lf-label">Password</label>
+        <input class="lf-input" type="password" id="adPwd" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')adminLogin()"/>
+      </div>
+      <button class="lbtn" onclick="adminLogin()">Sign In to Dashboard →</button>
+      <div class="l-err" id="loginErr"></div>
+      <div style="text-align:center;">
+        <button class="l-forgot-link" onclick="switchAdminTab('forgot')">🔑 Forgot your password?</button>
+      </div>
+      <div class="l-hint">Restricted to authorised administrators only.<br>Customer site: <a href="index.html">index.html ↗</a></div>
+    </div>
+
+    <!-- ── REGISTER PANEL ── -->
+    <div class="auth-panel" id="adminRegPanel">
+      <div class="lf-row">
+        <div class="lf-group"><label class="lf-label">First Name</label><input class="lf-input" id="regFirstName" placeholder="First"/></div>
+        <div class="lf-group"><label class="lf-label">Last Name</label><input class="lf-input" id="regLastName" placeholder="Last"/></div>
+      </div>
+      <div class="lf-group"><label class="lf-label">Email Address</label><input class="lf-input" type="email" id="regEmail" placeholder="admin@abevents.in"/></div>
+      <div class="lf-group"><label class="lf-label">Phone</label><input class="lf-input" id="regPhone" placeholder="+91 XXXXX XXXXX"/></div>
+      <div class="lf-group">
+        <label class="lf-label">Password</label>
+        <input class="lf-input" type="password" id="regPwd" placeholder="Min. 6 characters" oninput="checkPwStrength(this.value)"/>
+        <div class="pw-strength-bar" id="pwBar" style="width:0;"></div>
+        <div class="pw-strength-hint" id="pwHint"></div>
+      </div>
+      <div class="lf-group">
+        <label class="lf-label">Confirm Password</label>
+        <input class="lf-input" type="password" id="regPwd2" placeholder="Re-enter password"/>
+      </div>
+      <button class="lbtn" onclick="adminRegister()">Create Admin Account →</button>
+      <div class="l-err" id="regErr"></div>
+      <div class="l-ok" id="regOk"></div>
+      <div class="l-hint" style="margin-top:12px;">⚠️ Your email must be in the admin whitelist to access the dashboard after registration.</div>
+    </div>
+
+    <!-- ── FORGOT PASSWORD PANEL ── -->
+    <div class="auth-panel" id="adminForgotPanel">
+      <button class="l-forgot-link" onclick="switchAdminTab('login')" style="margin-bottom:16px;">← Back to Sign In</button>
+      <div style="font-family:var(--fh);font-size:.98rem;font-weight:700;color:var(--t1);margin-bottom:4px;">Reset Password</div>
+      <div style="font-size:.78rem;color:var(--t2);margin-bottom:18px;">Enter your admin email and we'll send a reset link.</div>
+      <div class="lf-group"><label class="lf-label">Admin Email</label><input class="lf-input" type="email" id="fpEmail" placeholder="admin@abevents.in"/></div>
+      <button class="lbtn" onclick="adminForgotPwd()">Send Reset Link →</button>
+      <div class="l-err" id="fpErr"></div>
+      <div class="l-ok" id="fpOk"></div>
+    </div>
+
   </div>
 </div>
 
@@ -586,7 +659,7 @@ tr:hover td{background:rgba(255,255,255,.012);}
 <!-- ══════════ FIREBASE ══════════ -->
 <script type="module">
 import { initializeApp } from"https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth,signInWithEmailAndPassword,signOut,onAuthStateChanged } from"https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,onAuthStateChanged,sendPasswordResetEmail } from"https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore,collection,getDocs,doc,updateDoc,addDoc,deleteDoc,query,where,orderBy,serverTimestamp } from"https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { getStorage,ref,uploadBytesResumable,getDownloadURL,deleteObject } from"https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
@@ -619,9 +692,51 @@ onAuthStateChanged(auth,async user=>{
 });
 
 window.adminLogin=async()=>{
-  showErr('');
+  showErr('loginErr','');
   try{ await signInWithEmailAndPassword(auth,document.getElementById('adEmail').value.trim(),document.getElementById('adPwd').value); }
-  catch(e){ showErr(fe(e.code)); }
+  catch(e){ showErr('loginErr',fe(e.code)); }
+};
+
+// ── REGISTER ──
+window.adminRegister=async()=>{
+  showErr('regErr',''); setOk('regOk','');
+  const email=document.getElementById('regEmail').value.trim();
+  const pwd=document.getElementById('regPwd').value;
+  const pwd2=document.getElementById('regPwd2').value;
+  const first=document.getElementById('regFirstName').value.trim();
+  if(!email||!pwd){ showErr('regErr','Please fill in all required fields.'); return; }
+  if(pwd!==pwd2){ showErr('regErr','Passwords do not match.'); return; }
+  if(pwd.length<6){ showErr('regErr','Password must be at least 6 characters.'); return; }
+  try{
+    const cred=await createUserWithEmailAndPassword(auth,email,pwd);
+    await addDoc(collection(db,'admins'),{
+      uid:cred.user.uid,
+      firstName:first,
+      lastName:document.getElementById('regLastName').value.trim(),
+      email,
+      phone:document.getElementById('regPhone').value.trim(),
+      role:'admin',
+      createdAt:serverTimestamp()
+    });
+    setOk('regOk','✓ Account created! If your email is whitelisted, you can now sign in.');
+    // Clear fields
+    ['regFirstName','regLastName','regEmail','regPhone','regPwd','regPwd2'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    document.getElementById('pwBar').style.width='0';
+    document.getElementById('pwHint').textContent='';
+    setTimeout(()=>switchAdminTab('login'),2500);
+  } catch(e){ showErr('regErr',fe(e.code)); }
+};
+
+// ── FORGOT PASSWORD ──
+window.adminForgotPwd=async()=>{
+  showErr('fpErr',''); setOk('fpOk','');
+  const email=document.getElementById('fpEmail').value.trim();
+  if(!email){ showErr('fpErr','Please enter your email address.'); return; }
+  try{
+    await sendPasswordResetEmail(auth,email);
+    setOk('fpOk','✓ Reset link sent! Check your inbox and spam folder.');
+    showToast('Password reset email sent 📧');
+  } catch(e){ showErr('fpErr',fe(e.code)); }
 };
 window.adminSignOut=async()=>{ await signOut(auth); window.location.reload(); };
 
@@ -942,14 +1057,14 @@ function renderServicesPanel(){
   renderSvcChart('svcChartFull');
 }
 
-// ── HELPERS ──
 function updateBadges(){
   const p=allBookings.filter(b=>b.status==='pending').length;
   document.getElementById('pendingBadge').textContent=p;
   document.getElementById('notifDot').style.display=p>0?'block':'none';
 }
-function showErr(msg){document.getElementById('loginErr').textContent=msg;}
-function fe(c){const m={'auth/user-not-found':'No admin account found.','auth/wrong-password':'Incorrect password.','auth/too-many-requests':'Too many attempts. Try later.','auth/invalid-email':'Invalid email format.'};return m[c]||'Sign in failed. Try again.';}
+function showErr(id,msg){const el=document.getElementById(id);if(el)el.textContent=msg;}
+function setOk(id,msg){const el=document.getElementById(id);if(el)el.innerHTML=`<span style="color:var(--green)">${msg}</span>`;}
+function fe(c){const m={'auth/user-not-found':'No admin account found.','auth/wrong-password':'Incorrect password.','auth/invalid-credential':'Invalid email or password.','auth/email-already-in-use':'Email already registered.','auth/weak-password':'Password must be at least 6 characters.','auth/too-many-requests':'Too many attempts. Try later.','auth/invalid-email':'Invalid email format.','auth/missing-password':'Please enter your password.'};return m[c]||'Something went wrong. Try again.';}
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);}
 window.saveSettings=()=>{showToast('Settings saved ✓');document.getElementById('settingsMsg').innerHTML='<span style="color:var(--green)">Settings saved.</span>';};
 
@@ -959,6 +1074,50 @@ window.filterUsers=window.filterUsers;
 </script>
 
 <script>
+// ── AUTH TAB SWITCHER ──
+window.switchAdminTab=(t)=>{
+  ['login','register','forgot'].forEach(p=>{
+    const el=document.getElementById('adminLoginPanel'===`admin${p.charAt(0).toUpperCase()+p.slice(1)}Panel`?'adminLoginPanel':p==='register'?'adminRegPanel':'adminForgotPanel');
+  });
+  // Map tab names to panel IDs
+  const panelMap={login:'adminLoginPanel',register:'adminRegPanel',forgot:'adminForgotPanel'};
+  Object.entries(panelMap).forEach(([key,id])=>{
+    const el=document.getElementById(id);
+    if(el) el.classList.toggle('active',key===t);
+  });
+  // Show/hide tabs row
+  const tabs=document.getElementById('adminAuthTabs');
+  if(tabs) tabs.style.display=t==='forgot'?'none':'flex';
+  // Highlight active tab
+  document.querySelectorAll('.auth-tab').forEach((tab,i)=>{
+    tab.classList.toggle('active',(i===0&&t==='login')||(i===1&&t==='register'));
+  });
+  // Clear messages
+  ['loginErr','regErr','regOk','fpErr','fpOk'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent='';});
+};
+
+// ── PASSWORD STRENGTH ──
+window.checkPwStrength=(v)=>{
+  const bar=document.getElementById('pwBar');
+  const hint=document.getElementById('pwHint');
+  if(!v){bar.style.width='0';bar.style.background='';hint.textContent='';return;}
+  let score=0;
+  if(v.length>=6) score++;
+  if(v.length>=10) score++;
+  if(/[A-Z]/.test(v)) score++;
+  if(/[0-9!@#$%^&*]/.test(v)) score++;
+  const levels=[
+    ['0','',''],
+    ['25%','#EF4444','Weak'],
+    ['50%','#F59E0B','Fair'],
+    ['75%','#60A5FA','Good'],
+    ['100%','#22C55E','Strong']
+  ];
+  const l=levels[Math.min(score,4)];
+  bar.style.width=l[0]; bar.style.background=l[1];
+  hint.textContent=l[2]||''; hint.style.color=l[1];
+};
+
 // ── PANEL NAV ──
 let mobSidebarOpen=false;
 function showPanel(id,el){

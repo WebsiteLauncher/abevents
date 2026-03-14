@@ -389,7 +389,7 @@ footer{background:var(--dark);border-top:1px solid rgba(201,168,76,.1);padding:5
         <div class="bk-contacts">
           <div class="c-item"><div class="c-icon">📍</div><span>Jubilee Hills, Hyderabad, Telangana</span></div>
           <div class="c-item"><div class="c-icon">📞</div><span>+91 98765 43210</span></div>
-          <div class="c-item"><div class="c-icon">✉️</div><span>hello@abevents.in</span></div>
+          <div class="c-item"><div class="c-icon">✉️</div><span><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="adc5c8c1c1c2edcccfc8dbc8c3d9de83c4c3">[email&#160;protected]</a></span></div>
           <div class="c-item"><div class="c-icon">🕐</div><span>Mon–Sat: 10 AM – 7 PM</span></div>
         </div>
       </div>
@@ -582,7 +582,7 @@ footer{background:var(--dark);border-top:1px solid rgba(201,168,76,.1);padding:5
 <div class="toast" id="toast"></div>
 
 <!-- ══ FIREBASE ══ -->
-<script type="module">
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, collection, addDoc, query, where, getDocs, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -760,31 +760,75 @@ function fe(c) {
 
 <!-- ══ UI JS ══ -->
 <script>
-// INDIAN EVENT PHOTOS
+// SERVICE DATA — Service-specific photos (no god images)
 const SVCS = [
   {name:'Luxury Decor & Styling',icon:'🌸',desc:'Transformative floral arrangements, table settings, draperies, and thematic setups that turn any venue into a masterpiece.',tags:['Floral','Drapery','Thematic','Centerpieces'],
-   photos:['https://images.unsplash.com/photo-1583089892943-e02e5b017b6a?w=800&q=80','https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=800&q=80','https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=800&q=80','https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800&q=80','https://images.unsplash.com/photo-1529543544282-ea669407fca3?w=800&q=80','https://images.unsplash.com/photo-1478146059778-26028b07395a?w=800&q=80']},
+   // Lotus flowers, floral mandap, flower wall, centerpieces, wedding decor
+   photos:[
+     'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=800&q=80',
+     'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800&q=80',
+     'https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=800&q=80',
+     'https://images.unsplash.com/photo-1529543544282-ea669407fca3?w=800&q=80',
+     'https://images.unsplash.com/photo-1561489413-985b06da5bee?w=800&q=80',
+     'https://images.unsplash.com/photo-1478146059778-26028b07395a?w=800&q=80'
+   ]},
   {name:'Professional Photography',icon:'📷',desc:'Cinematic photography and videography capturing every raw emotion, candid moment, and curated detail.',tags:['Photo','Videography','Drone','Album'],
-   photos:['https://images.unsplash.com/photo-1607861716497-e65ab29fc7ac?w=800&q=80','https://images.unsplash.com/photo-1591604466107-ec97de577aff?w=800&q=80','https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=800&q=80','https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=800&q=80','https://images.unsplash.com/photo-1532712938310-34cb3982ef74?w=800&q=80']},
+   // Camera equipment, wedding photography, couple shoots, event photography
+   photos:[
+     'https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=800&q=80',
+     'https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=800&q=80',
+     'https://images.unsplash.com/photo-1591604466107-ec97de577aff?w=800&q=80',
+     'https://images.unsplash.com/photo-1532712938310-34cb3982ef74?w=800&q=80',
+     'https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=800&q=80'
+   ]},
   {name:'Live Music & Entertainment',icon:'🎵',desc:'From classical ensembles and folk performances to high-energy DJs — the perfect sound for your celebration.',tags:['DJ','Live Band','Classical','Shehnai'],
-   photos:['https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=800&q=80','https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=800&q=80','https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=800&q=80','https://images.unsplash.com/photo-1429962714451-bb934ecdc4ec?w=800&q=80','https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=800&q=80']},
+   // Live band on stage, DJ setup, concert crowd, musicians performing
+   photos:[
+     'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=800&q=80',
+     'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=800&q=80',
+     'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=800&q=80',
+     'https://images.unsplash.com/photo-1429962714451-bb934ecdc4ec?w=800&q=80',
+     'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=800&q=80'
+   ]},
   {name:'Premium Lighting Design',icon:'✨',desc:'Fairy lights, LED installations, diya arrangements, and intelligent wash systems that set the perfect mood.',tags:['Fairy Lights','LED','Diya Decor','Uplighting'],
-   photos:['https://images.unsplash.com/photo-1504196606672-aef5c9cefc92?w=800&q=80','https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800&q=80','https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=800&q=80','https://images.unsplash.com/photo-1524368535928-5b5e00ddc76b?w=800&q=80','https://images.unsplash.com/photo-1541532713592-79a0317b6b77?w=800&q=80']},
+   // Event hall lit up, fairy lights, LED stage, colourful uplighting
+   photos:[
+     'https://images.unsplash.com/photo-1504196606672-aef5c9cefc92?w=800&q=80',
+     'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800&q=80',
+     'https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=800&q=80',
+     'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=800&q=80',
+     'https://images.unsplash.com/photo-1524368535928-5b5e00ddc76b?w=800&q=80'
+   ]},
   {name:'Gourmet Catering',icon:'🍽️',desc:'Multi-cuisine Indian menus by award-winning chefs. Lavish buffets, live chaat stations & elegant plated dinners.',tags:['Buffet','Plated','Live Stations','Mithai'],
-   photos:['https://images.unsplash.com/photo-1567337710282-00832b415979?w=800&q=80','https://images.unsplash.com/photo-1555244162-803834f70033?w=800&q=80','https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&q=80','https://images.unsplash.com/photo-1476224203421-9ac39bcb3327?w=800&q=80','https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&q=80']},
+   // Indian food spread, buffet table, gourmet plating, chaat counter
+   photos:[
+     'https://images.unsplash.com/photo-1567337710282-00832b415979?w=800&q=80',
+     'https://images.unsplash.com/photo-1555244162-803834f70033?w=800&q=80',
+     'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&q=80',
+     'https://images.unsplash.com/photo-1476224203421-9ac39bcb3327?w=800&q=80',
+     'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&q=80'
+   ]},
   {name:'Complete Event Management',icon:'🎊',desc:'Full-spectrum orchestration from concept to cleanup. Weddings, galas, birthdays, anniversaries and corporate events.',tags:['Wedding','Corporate','Birthday','Anniversary'],
-   photos:['https://images.unsplash.com/photo-1630650263997-3440aca7e19f?w=800&q=80','https://images.unsplash.com/photo-1519741497674-611481863552?w=800&q=80','https://images.unsplash.com/photo-1543269865-cbf427effbad?w=800&q=80','https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=800&q=80','https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=800&q=80']}
+   // Grand event venues, wedding ceremony hall, gala reception, birthday setup
+   photos:[
+     'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=800&q=80',
+     'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=800&q=80',
+     'https://images.unsplash.com/photo-1520854221256-17452cc3a785?w=800&q=80',
+     'https://images.unsplash.com/photo-1519741497674-611481863552?w=800&q=80',
+     'https://images.unsplash.com/photo-1543269865-cbf427effbad?w=800&q=80'
+   ]}
 ];
 window._svcPhotos = {};
 SVCS.forEach(s => { window._svcPhotos[s.name] = s.photos; });
 
-// HERO — Indian event photos
+// HERO — Kalyana Mandapam & Indian Wedding Decor (no god images)
 const heroPhotos = [
-  'https://images.unsplash.com/photo-1583089892943-e02e5b017b6a?w=1600&q=80',
-  'https://images.unsplash.com/photo-1630650263997-3440aca7e19f?w=1600&q=80',
-  'https://images.unsplash.com/photo-1529543544282-ea669407fca3?w=1600&q=80',
-  'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=1600&q=80',
-  'https://images.unsplash.com/photo-1567337710282-00832b415979?w=1600&q=80',
+  'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=1600&q=80',  // Grand floral mandap with lotus & flowers
+  'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=1600&q=80',  // Decorated wedding mandapam hall
+  'https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=1600&q=80',  // Elegant floral wedding ceremony decor
+  'https://images.unsplash.com/photo-1529543544282-ea669407fca3?w=1600&q=80',  // Lotus & rose bridal decor setup
+  'https://images.unsplash.com/photo-1504196606672-aef5c9cefc92?w=1600&q=80',  // Fairy-light mandapam reception
+  'https://images.unsplash.com/photo-1555244162-803834f70033?w=1600&q=80',     // Grand catering banquet spread
 ];
 let curSlide=0;
 function initHero() {
@@ -820,15 +864,15 @@ function initServices() {
     </div>`).join('');
 }
 
-// PHOTO STRIP — Indian photos
+// PHOTO STRIP — Kalyana Mandapam & Indian decor (no god images)
 const stripData = [
-  {url:'https://images.unsplash.com/photo-1583089892943-e02e5b017b6a?w=900&q=80',label:'Indian Wedding Mandap'},
+  {url:'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=900&q=80',label:'Lotus Flower Mandapam'},
+  {url:'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=600&q=80',label:'Grand Kalyana Mandapam'},
+  {url:'https://images.unsplash.com/photo-1504196606672-aef5c9cefc92?w=600&q=80',label:'Fairy Light Reception'},
   {url:'https://images.unsplash.com/photo-1529543544282-ea669407fca3?w=600&q=80',label:'Bridal Floral Decor'},
-  {url:'https://images.unsplash.com/photo-1504196606672-aef5c9cefc92?w=600&q=80',label:'LED Lighting Setup'},
-  {url:'https://images.unsplash.com/photo-1607861716497-e65ab29fc7ac?w=600&q=80',label:'Bridal Portrait'},
   {url:'https://images.unsplash.com/photo-1567337710282-00832b415979?w=600&q=80',label:'Indian Cuisine Spread'},
-  {url:'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=600&q=80',label:'Floral Centerpiece'},
-  {url:'https://images.unsplash.com/photo-1630650263997-3440aca7e19f?w=600&q=80',label:'Grand Celebration'},
+  {url:'https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=600&q=80',label:'Elegant Stage Decor'},
+  {url:'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=600&q=80',label:'Grand Celebration'},
 ];
 function initStrip() {
   document.getElementById('photoStrip').innerHTML = stripData.map((p,i)=>
@@ -916,11 +960,4 @@ window.showToast=(msg)=>{const t=document.getElementById('toast');t.textContent=
 
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape'){closeAuth();closeGl();closeViewer();}
-  if(e.key==='ArrowRight'&&document.getElementById('glViewer').classList.contains('open'))viewNav(1);
-  if(e.key==='ArrowLeft'&&document.getElementById('glViewer').classList.contains('open'))viewNav(-1);
-});
-
-initHero(); initServices(); initStrip();
-</script>
-</body>
-</html>
+  if(e.key==='ArrowRight'&&document.getElementBy
