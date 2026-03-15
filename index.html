@@ -128,13 +128,27 @@ section{padding:88px 0;}
 
 /* PHOTO STRIP */
 #gallery-section{background:var(--black);padding:80px 0;}
-.photo-strip{display:grid;grid-template-columns:2fr 1.2fr 1fr 1.4fr;grid-template-rows:260px 200px;gap:3px;margin-top:44px;}
+.photo-strip{display:grid;grid-template-columns:2fr 1.2fr 1fr 1.4fr;grid-template-rows:260px 200px;gap:3px;margin-top:0;}
 .ps-item{overflow:hidden;position:relative;background:var(--dark3);cursor:pointer;}
 .ps-item:nth-child(1){grid-row:1/3;}
 .ps-item img{width:100%;height:100%;object-fit:cover;transition:transform .6s var(--ease);}
 .ps-item:hover img{transform:scale(1.05);}
 .ps-lbl{position:absolute;bottom:0;left:0;right:0;padding:12px 16px;background:linear-gradient(to top,rgba(0,0,0,.8),transparent);font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);opacity:0;transition:var(--tr);}
 .ps-item:hover .ps-lbl{opacity:1;}
+/* Category filter tabs */
+.cat-filter-wrap{display:flex;flex-wrap:wrap;gap:8px;margin-top:28px;}
+.cat-btn{background:transparent;border:1px solid rgba(201,168,76,.2);color:var(--muted);padding:8px 18px;border-radius:100px;font-size:.72rem;cursor:pointer;font-family:var(--fb);transition:var(--tr);white-space:nowrap;}
+.cat-btn:hover,.cat-btn.active{border-color:var(--gold);color:var(--gold);background:rgba(201,168,76,.07);}
+/* Dynamic gallery grid */
+.dyn-gallery-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:3px;margin-bottom:6px;}
+.dyn-item{aspect-ratio:4/3;overflow:hidden;position:relative;background:var(--dark3);cursor:pointer;}
+.dyn-item img{width:100%;height:100%;object-fit:cover;transition:transform .5s var(--ease);}
+.dyn-item:hover img{transform:scale(1.05);}
+.dyn-lbl{position:absolute;bottom:0;left:0;right:0;padding:10px 14px;background:linear-gradient(to top,rgba(0,0,0,.85),transparent);display:flex;justify-content:space-between;align-items:flex-end;opacity:0;transition:var(--tr);}
+.dyn-item:hover .dyn-lbl{opacity:1;}
+.dyn-caption{font-size:.7rem;color:var(--cream);letter-spacing:.06em;}
+.dyn-cat{font-size:.62rem;color:var(--gold);letter-spacing:.1em;text-transform:uppercase;}
+.gallery-loading-msg{grid-column:1/-1;text-align:center;padding:48px;color:var(--muted);font-size:.85rem;}
 
 /* PROCESS */
 #process{background:var(--black);}
@@ -252,6 +266,7 @@ footer{background:var(--dark);border-top:1px solid rgba(201,168,76,.1);padding:5
   .t-grid{grid-template-columns:1fr 1fr;}
   .ft-grid{grid-template-columns:1fr 1fr;}
   .photo-strip{grid-template-columns:1fr 1fr;grid-template-rows:220px 180px;}
+  .dyn-gallery-grid{grid-template-columns:1fr 1fr;}
   .ps-item:nth-child(1){grid-row:auto;}
 }
 @media(max-width:768px){
@@ -263,6 +278,7 @@ footer{background:var(--dark);border-top:1px solid rgba(201,168,76,.1);padding:5
   .con{padding:0 20px;}
   .svc-grid{grid-template-columns:1fr;}
   .photo-strip{grid-template-columns:1fr 1fr;grid-template-rows:180px 180px;}
+  .dyn-gallery-grid{grid-template-columns:1fr 1fr;}
   .proc{grid-template-columns:1fr 1fr;gap:32px;}
   .proc::before{display:none;}
   .t-grid{grid-template-columns:1fr;}
@@ -351,14 +367,32 @@ footer{background:var(--dark);border-top:1px solid rgba(201,168,76,.1);padding:5
   </div>
 </section>
 
-<!-- GALLERY STRIP -->
+<!-- GALLERY — Category Based -->
 <section id="gallery-section">
   <div class="con">
     <div class="s-lbl">Our Portfolio</div>
     <h2 class="s-ttl">Moments We've <em>Crafted</em></h2>
     <div class="divider"></div>
+    <!-- Category filter tabs -->
+    <div class="cat-filter-wrap" id="catFilterWrap">
+      <button class="cat-btn active" onclick="filterGallery('all',this)">🎊 All</button>
+      <button class="cat-btn" onclick="filterGallery('Wedding',this)">💍 Wedding</button>
+      <button class="cat-btn" onclick="filterGallery('Engagement',this)">💝 Engagement</button>
+      <button class="cat-btn" onclick="filterGallery('Baby Shower',this)">👶 Baby Shower</button>
+      <button class="cat-btn" onclick="filterGallery('Birthday',this)">🎂 Birthday</button>
+      <button class="cat-btn" onclick="filterGallery('Anniversary',this)">🌹 Anniversary</button>
+      <button class="cat-btn" onclick="filterGallery('Corporate',this)">🏢 Corporate</button>
+      <button class="cat-btn" onclick="filterGallery('Housewarming',this)">🏠 Housewarming</button>
+    </div>
   </div>
-  <div style="padding:0 3px;"><div class="photo-strip" id="photoStrip"></div></div>
+  <!-- Dynamic gallery grid from Firestore + static fallback -->
+  <div class="con" style="margin-top:28px;">
+    <div class="dyn-gallery-grid" id="dynGalleryGrid">
+      <!-- populated by JS -->
+    </div>
+    <!-- Static photo strip fallback shown when no Firestore photos -->
+    <div class="photo-strip" id="photoStrip" style="margin-top:0;"></div>
+  </div>
 </section>
 
 <!-- PROCESS -->
@@ -591,7 +625,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyDo8u-SZMHPXBLdJV4oq5rNiPz6p33KSF4",
   authDomain: "abevents-38a91.firebaseapp.com",
   projectId: "abevents-38a91",
-  storageBucket: "abevents-38a91.firebasestorage.app",
+  storageBucket: "abevents-38a91.appspot.com",
   messagingSenderId: "408468587854",
   appId: "1:408468587854:web:09c108c41c4fb7cd81ca1f"
 };
@@ -611,6 +645,8 @@ onAuthStateChanged(auth, user => {
     document.getElementById('uAvBtn').textContent = (user.displayName||user.email||'?')[0].toUpperCase();
     showForm(true, false);
     loadMyBookings(user.uid);
+    if(window.loadFirestoreGallery) window.loadFirestoreGallery();
+    if(window.loadCustomerGallery) window.loadCustomerGallery();
   } else {
     document.getElementById('guestNav').classList.remove('hidden');
     document.getElementById('userNav').classList.add('hidden');
@@ -821,25 +857,78 @@ function initServices() {
     </div>`).join('');
 }
 
-// PHOTO STRIP — Kalyana Mandapam & Indian decor
-const stripData = [
-  {url:'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=900&q=80',label:'Lotus Flower Mandapam'},
-  {url:'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=600&q=80',label:'Grand Kalyana Mandapam'},
-  {url:'https://images.unsplash.com/photo-1504196606672-aef5c9cefc92?w=600&q=80',label:'Fairy Light Reception'},
-  {url:'https://images.unsplash.com/photo-1529543544282-ea669407fca3?w=600&q=80',label:'Bridal Floral Decor'},
-  {url:'https://images.unsplash.com/photo-1567337710282-00832b415979?w=600&q=80',label:'Indian Cuisine Spread'},
-  {url:'https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=600&q=80',label:'Elegant Stage Decor'},
-  {url:'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=600&q=80',label:'Grand Celebration'},
+// ── CATEGORY GALLERY — static items (shown until Firestore loads) ──
+const STATIC_GALLERY = [
+  {url:'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=800&q=80',caption:'Lotus Flower Mandapam',eventCategory:'Wedding',service:'Luxury Decor & Styling'},
+  {url:'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800&q=80',caption:'Grand Kalyana Mandapam',eventCategory:'Wedding',service:'Luxury Decor & Styling'},
+  {url:'https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=800&q=80',caption:'Floral Wedding Stage',eventCategory:'Wedding',service:'Luxury Decor & Styling'},
+  {url:'https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=800&q=80',caption:'Wedding Photography',eventCategory:'Wedding',service:'Professional Photography'},
+  {url:'https://images.unsplash.com/photo-1504196606672-aef5c9cefc92?w=800&q=80',caption:'Fairy Light Reception',eventCategory:'Wedding',service:'Premium Lighting Design'},
+  {url:'https://images.unsplash.com/photo-1529543544282-ea669407fca3?w=800&q=80',caption:'Bridal Floral Setup',eventCategory:'Engagement',service:'Luxury Decor & Styling'},
+  {url:'https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=800&q=80',caption:'Engagement Photography',eventCategory:'Engagement',service:'Professional Photography'},
+  {url:'https://images.unsplash.com/photo-1561489413-985b06da5bee?w=800&q=80',caption:'Rose Petal Decor',eventCategory:'Engagement',service:'Luxury Decor & Styling'},
+  {url:'https://images.unsplash.com/photo-1520854221256-17452cc3a785?w=800&q=80',caption:'Baby Shower Decor',eventCategory:'Baby Shower',service:'Luxury Decor & Styling'},
+  {url:'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=800&q=80',caption:'Pastel Balloon Setup',eventCategory:'Baby Shower',service:'Luxury Decor & Styling'},
+  {url:'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800&q=80',caption:'Soft Fairy Lights',eventCategory:'Baby Shower',service:'Premium Lighting Design'},
+  {url:'https://images.unsplash.com/photo-1543269865-cbf427effbad?w=800&q=80',caption:'Birthday Celebration',eventCategory:'Birthday',service:'Complete Event Management'},
+  {url:'https://images.unsplash.com/photo-1519741497674-611481863552?w=800&q=80',caption:'Birthday Party Decor',eventCategory:'Birthday',service:'Luxury Decor & Styling'},
+  {url:'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=800&q=80',caption:'Birthday Live Music',eventCategory:'Birthday',service:'Live Music & Entertainment'},
+  {url:'https://images.unsplash.com/photo-1478146059778-26028b07395a?w=800&q=80',caption:'Anniversary Decor',eventCategory:'Anniversary',service:'Luxury Decor & Styling'},
+  {url:'https://images.unsplash.com/photo-1567337710282-00832b415979?w=800&q=80',caption:'Anniversary Dinner',eventCategory:'Anniversary',service:'Gourmet Catering'},
+  {url:'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=800&q=80',caption:'Corporate Gala',eventCategory:'Corporate',service:'Complete Event Management'},
+  {url:'https://images.unsplash.com/photo-1555244162-803834f70033?w=800&q=80',caption:'Corporate Catering',eventCategory:'Corporate',service:'Gourmet Catering'},
+  {url:'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=800&q=80',caption:'Corporate Live Stage',eventCategory:'Corporate',service:'Live Music & Entertainment'},
+  // Housewarming
+  {url:'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80',caption:'Housewarming Floral Entrance',eventCategory:'Housewarming',service:'Luxury Decor & Styling'},
+  {url:'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80',caption:'Elegant Home Decor Setup',eventCategory:'Housewarming',service:'Luxury Decor & Styling'},
+  {url:'https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?w=800&q=80',caption:'Housewarming Celebration',eventCategory:'Housewarming',service:'Complete Event Management'},
 ];
-function initStrip() {
-  document.getElementById('photoStrip').innerHTML = stripData.map((p,i)=>
-    `<div class="ps-item" onclick="openStripViewer(${i})"><img src="${p.url}" alt="${p.label}" loading="lazy"/><div class="ps-lbl">${p.label}</div></div>`
+let firestoreGallery=[], activeCatFilter='all';
+
+function renderDynGallery(){
+  const combined=[...firestoreGallery,...STATIC_GALLERY];
+  const filtered=activeCatFilter==='all'?combined:combined.filter(i=>i.eventCategory===activeCatFilter);
+  const grid=document.getElementById('dynGalleryGrid');
+  const strip=document.getElementById('photoStrip');
+  if(strip) strip.style.display='none';
+  window._glImgs=filtered.map(i=>({url:i.url,caption:(i.caption||'')+(i.eventCategory?' · '+i.eventCategory:'')}));
+  if(!filtered.length){
+    grid.innerHTML='<div class="gal-empty-msg">No photos in this category yet. Check back soon! 📸</div>';
+    return;
+  }
+  grid.innerHTML=filtered.map((item,i)=>
+    `<div class="dyn-item" onclick="openViewer(${i})">
+      <img src="${item.url}" alt="${item.caption||''}" loading="lazy"/>
+      <div class="dyn-lbl">
+        <span class="dyn-caption">${item.caption||''}</span>
+        <span class="dyn-cat">${item.eventCategory||''}</span>
+      </div>
+    </div>`
   ).join('');
 }
-window.openStripViewer = (i) => {
-  window._glImgs = stripData.map(d=>({url:d.url,caption:d.label}));
-  openViewer(i);
+window.filterGallery=(cat,btn)=>{
+  activeCatFilter=cat;
+  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  renderDynGallery();
 };
+// Called after Firebase db is ready to load Firestore photos
+window.loadFirestoreGallery=async()=>{
+  try{
+    const db=window._db; if(!db)return;
+    const {collection,getDocs}=await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+    const snap=await getDocs(collection(db,'gallery'));
+    firestoreGallery=snap.docs.map(d=>{const data=d.data();return{url:data.url,caption:data.caption||'',eventCategory:data.eventCategory||'General',service:data.service||'',id:d.id};});
+    renderDynGallery();
+  }catch(e){console.log('Gallery load:',e.message);}
+};
+
+// Legacy strip (hidden, kept for fallback)
+function initStrip(){
+  const el=document.getElementById('photoStrip');
+  if(el)el.style.display='none';
+}
+window.openStripViewer=(i)=>{openViewer(i);};
 
 // GALLERY
 function openGl(){document.getElementById('glOv').classList.add('open');document.body.style.overflow='hidden';}
@@ -916,11 +1005,13 @@ window.quickBook=(svc)=>{document.getElementById('bkService').value=svc;document
 window.showToast=(msg)=>{const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3500);};
 
 document.addEventListener('keydown',e=>{
-  if(e.key==='Escape'){closeAuth();closeGl();closeViewer();}  if(e.key==='ArrowRight'&&document.getElementById('glViewer').classList.contains('open'))viewNav(1);
-  if(e.key==='ArrowLeft'&&document.getElementById('glViewer').classList.contains('open'))viewNav(-1);
+  if(e.key==='Escape'){closeAuth();closeGl();closeViewer();}
+  if(e.key==='ArrowRight'&&document.getElementById('glViewer').classList.contains('open')) viewNav(1);
+  if(e.key==='ArrowLeft'&&document.getElementById('glViewer').classList.contains('open')) viewNav(-1);
 });
 
-initHero(); initServices(); initStrip();
+initHero(); initServices(); initStrip(); renderDynGallery();
+setTimeout(()=>{if(window.loadFirestoreGallery) window.loadFirestoreGallery();},1000);
 </script>
 </body>
 </html>

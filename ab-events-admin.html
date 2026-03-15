@@ -529,9 +529,17 @@ tr:hover td{background:rgba(255,255,255,.012);}
 
     <!-- ───── GALLERY & PHOTO UPLOAD ───── -->
     <div class="panel" id="panel-gallery">
+      <!-- Cloudinary Setup Notice -->
+      <div style="background:rgba(201,168,76,.07);border:1px solid rgba(201,168,76,.2);border-radius:var(--r2);padding:14px 18px;margin-bottom:16px;font-size:.78rem;color:var(--t2);line-height:1.8;">
+        <div style="font-family:var(--fh);font-size:.85rem;color:var(--gold);margin-bottom:6px;">☁️ Cloudinary Setup Required (Free — 25 GB)</div>
+        1. Go to <strong style="color:var(--t1)">cloudinary.com</strong> → Sign up free → copy your <strong style="color:var(--t1)">Cloud Name</strong><br>
+        2. Settings → Upload → Upload Presets → Add preset → set <strong style="color:var(--t1)">Signing Mode: Unsigned</strong>, name it <code style="background:var(--s3);padding:1px 7px;border-radius:4px;color:var(--gold)">ab_events_gallery</code><br>
+        3. In this file, replace <code style="background:var(--s3);padding:1px 7px;border-radius:4px;color:var(--gold)">YOUR_CLOUD_NAME</code> with your actual Cloud Name (search for it in the code)
+      </div>
+
       <div class="card" style="margin-bottom:16px;">
         <div class="card-hdr">
-          <div><div class="card-ttl">📸 Upload New Photo</div><div class="card-sub">Add images to service galleries — shown to customers instantly</div></div>
+          <div><div class="card-ttl">📸 Upload New Photo</div><div class="card-sub">Add images by service &amp; event category — shown instantly on customer site</div></div>
         </div>
         <div class="card-body">
           <div class="gallery-manager">
@@ -550,18 +558,34 @@ tr:hover td{background:rgba(255,255,255,.012);}
               <label class="uf-label">Preview</label>
               <div id="uploadPreview">No image selected</div>
               <div class="upload-progress" id="uploadProgress"><div class="upload-progress-bar" id="uploadProgressBar"></div></div>
-              <label class="uf-label">Assign to Service *</label>
+
+              <label class="uf-label">Service Category *</label>
               <select class="uf-select" id="uploadService">
                 <option value="">— Select Service —</option>
-                <option>Luxury Decor & Styling</option>
+                <option>Luxury Decor &amp; Styling</option>
                 <option>Professional Photography</option>
-                <option>Live Music & Entertainment</option>
+                <option>Live Music &amp; Entertainment</option>
                 <option>Premium Lighting Design</option>
                 <option>Gourmet Catering</option>
                 <option>Complete Event Management</option>
               </select>
-              <label class="uf-label">Caption (optional)</label>
-              <input class="uf-input" id="uploadCaption" placeholder="e.g. Floral arch at Taj Falaknuma"/>
+
+              <label class="uf-label" style="margin-top:10px;">Event Category *</label>
+              <select class="uf-select" id="uploadEventCat">
+                <option value="">— Select Event Type —</option>
+                <option value="Wedding">💍 Wedding</option>
+                <option value="Engagement">💝 Engagement</option>
+                <option value="Reception">🎉 Reception</option>
+                <option value="Baby Shower">👶 Baby Shower</option>
+                <option value="Birthday">🎂 Birthday</option>
+                <option value="Anniversary">🌹 Anniversary</option>
+                <option value="Corporate">🏢 Corporate</option>
+                <option value="Housewarming">🏠 Housewarming</option>
+                <option value="General">📸 General / Other</option>
+              </select>
+
+              <label class="uf-label" style="margin-top:10px;">Caption (optional)</label>
+              <input class="uf-input" id="uploadCaption" placeholder="e.g. Lotus floral mandap at HICC"/>
               <button id="uploadBtn" onclick="uploadPhoto()" disabled>Upload Photo →</button>
               <div id="uploadMsg"></div>
             </div>
@@ -569,16 +593,31 @@ tr:hover td{background:rgba(255,255,255,.012);}
         </div>
       </div>
 
-      <!-- Gallery Grid -->
+      <!-- Gallery Grid with filters -->
       <div class="card">
-        <div class="card-hdr">
+        <div class="card-hdr" style="flex-wrap:wrap;gap:10px;">
           <div><div class="card-ttl">Uploaded Gallery Photos</div><div class="card-sub" id="gallerySubtitle">Photos uploaded via admin dashboard</div></div>
-          <div class="ftabs" id="galleryFilterTabs">
-            <button class="ftab active" onclick="setGalleryFilter('',this)">All</button>
-            <button class="ftab" onclick="setGalleryFilter('Luxury Decor & Styling',this)">Decor</button>
-            <button class="ftab" onclick="setGalleryFilter('Professional Photography',this)">Photo</button>
-            <button class="ftab" onclick="setGalleryFilter('Gourmet Catering',this)">Catering</button>
-            <button class="ftab" onclick="setGalleryFilter('Premium Lighting Design',this)">Lighting</button>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;">
+            <!-- Service filter -->
+            <div class="ftabs" id="galleryServiceTabs" style="flex-wrap:wrap;">
+              <button class="ftab active" onclick="setGalSvcFilter('',this)">All Services</button>
+              <button class="ftab" onclick="setGalSvcFilter('Luxury Decor &amp; Styling',this)">Decor</button>
+              <button class="ftab" onclick="setGalSvcFilter('Professional Photography',this)">Photo</button>
+              <button class="ftab" onclick="setGalSvcFilter('Gourmet Catering',this)">Catering</button>
+              <button class="ftab" onclick="setGalSvcFilter('Premium Lighting Design',this)">Lighting</button>
+              <button class="ftab" onclick="setGalSvcFilter('Live Music &amp; Entertainment',this)">Music</button>
+            </div>
+            <!-- Event category filter -->
+            <div class="ftabs" id="galleryCatTabs" style="flex-wrap:wrap;margin-top:4px;">
+              <button class="ftab active" onclick="setGalCatFilter('',this)">All Events</button>
+              <button class="ftab" onclick="setGalCatFilter('Wedding',this)">💍 Wedding</button>
+              <button class="ftab" onclick="setGalCatFilter('Engagement',this)">💝 Engagement</button>
+              <button class="ftab" onclick="setGalCatFilter('Baby Shower',this)">👶 Baby Shower</button>
+              <button class="ftab" onclick="setGalCatFilter('Birthday',this)">🎂 Birthday</button>
+              <button class="ftab" onclick="setGalCatFilter('Anniversary',this)">🌹 Anniversary</button>
+              <button class="ftab" onclick="setGalCatFilter('Corporate',this)">🏢 Corporate</button>
+              <button class="ftab" onclick="setGalCatFilter('Housewarming',this)">🏠 Housewarming</button>
+            </div>
           </div>
         </div>
         <div class="gallery-grid-admin" id="adminGalleryGrid">
@@ -648,21 +687,24 @@ tr:hover td{background:rgba(255,255,255,.012);}
 import { initializeApp } from"https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,onAuthStateChanged,sendPasswordResetEmail } from"https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore,collection,getDocs,doc,updateDoc,addDoc,deleteDoc,query,where,orderBy,serverTimestamp } from"https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { getStorage,ref,uploadBytesResumable,getDownloadURL,deleteObject } from"https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+// Firebase Storage removed — using Cloudinary for uploads
 
 // ▸ Replace with your Firebase config
-const cfg={apiKey:"AIzaSyDo8u-SZMHPXBLdJV4oq5rNiPz6p33KSF4",authDomain:"abevents-38a91.firebaseapp.com",projectId:"abevents-38a91",storageBucket:"abevents-38a91.firebasestorage.app",messagingSenderId:"408468587854",appId:"1:408468587854:web:09c108c41c4fb7cd81ca1f"};
+const cfg={apiKey:"AIzaSyDo8u-SZMHPXBLdJV4oq5rNiPz6p33KSF4",authDomain:"abevents-38a91.firebaseapp.com",projectId:"abevents-38a91",storageBucket:"abevents-38a91.appspot.com",messagingSenderId:"408468587854",appId:"1:408468587854:web:09c108c41c4fb7cd81ca1f"};
 const app=initializeApp(cfg);
 const auth=getAuth(app);
 const db=getFirestore(app);
-const storage=getStorage(app);
 
-let allBookings=[],allUsers=[],allGallery=[],currentFilter='all',currentGalleryFilter='',curDetailId=null;
+// ── CLOUDINARY CONFIG ── Replace with YOUR values from cloudinary.com dashboard ──
+const CLOUDINARY_CLOUD = 'YOUR_CLOUD_NAME';     // e.g. 'dxxxxxxxxx'  ← CHANGE THIS
+const CLOUDINARY_PRESET = 'ab_events_gallery';  // unsigned upload preset you created
+
+let allBookings=[],allUsers=[],allGallery=[],currentFilter='all',curDetailId=null;
 let selectedFile=null;
 
 // ── AUTH ──
 // Add your email here to grant admin access
-const ADMIN_EMAILS_LOCAL=['admin@abevents.in','srikanth.ambati4957@gmail.com','abevents@gmail.com'];
+const ADMIN_EMAILS_LOCAL=['admin@abevents.in','owner@abevents.in','abevents@gmail.com'];
 
 onAuthStateChanged(auth,async user=>{
   if(user&&ADMIN_EMAILS_LOCAL.includes(user.email)){
@@ -961,65 +1003,113 @@ window.onDrop=e=>{
 window.uploadPhoto=async()=>{
   if(!selectedFile){showToast('Please select an image first.');return;}
   const svc=document.getElementById('uploadService').value;
+  const eventCat=document.getElementById('uploadEventCat').value;
   if(!svc){showToast('Please select a service category.');return;}
+  if(!eventCat){showToast('Please select an event category.');return;}
+  if(selectedFile.size>5*1024*1024){showToast('File too large. Max 5MB.');return;}
+  if(CLOUDINARY_CLOUD==='YOUR_CLOUD_NAME'){
+    showToast('⚠️ Set your Cloudinary Cloud Name in the code first!');
+    document.getElementById('uploadMsg').innerHTML='<span class="msg-err">⚠️ Please set CLOUDINARY_CLOUD to your actual Cloud Name (find it on cloudinary.com dashboard).</span>';
+    return;
+  }
   const caption=document.getElementById('uploadCaption').value.trim();
   const btn=document.getElementById('uploadBtn');
   const msg=document.getElementById('uploadMsg');
   const prog=document.getElementById('uploadProgress');
   const bar=document.getElementById('uploadProgressBar');
   btn.disabled=true; btn.textContent='Uploading…';
-  prog.style.display='block'; bar.style.width='0%';
-  msg.innerHTML='';
+  prog.style.display='block'; bar.style.width='5%';
+  msg.innerHTML='<span style="color:var(--gold)">⬆️ Uploading to Cloudinary…</span>';
   try{
-    const fname=`gallery/${Date.now()}_${selectedFile.name.replace(/[^a-zA-Z0-9.]/g,'_')}`;
-    const storageRef=ref(storage,fname);
-    const task=uploadBytesResumable(storageRef,selectedFile);
-    task.on('state_changed',
-      snap=>{const pct=Math.round(snap.bytesTransferred/snap.totalBytes*100);bar.style.width=pct+'%';},
-      err=>{msg.innerHTML=`<span class="msg-err">Upload failed: ${err.message}</span>`;btn.disabled=false;btn.textContent='Upload Photo →';},
-      async()=>{
-        const url=await getDownloadURL(task.snapshot.ref);
-        await addDoc(collection(db,'gallery'),{url,service:svc,caption,storagePath:fname,uploadedAt:serverTimestamp()});
-        msg.innerHTML='<span class="msg-ok">✓ Photo uploaded and live on customer site!</span>';
-        btn.textContent='Upload Photo →'; btn.disabled=true;
-        selectedFile=null;
-        document.getElementById('uploadPreview').innerHTML='No image selected';
-        document.getElementById('uploadCaption').value='';
-        document.getElementById('uploadService').value='';
-        document.getElementById('photoFileInput').value='';
-        prog.style.display='none';
-        showToast('📸 Photo uploaded successfully!');
-        await loadGallery();
-      }
+    // ── Upload to Cloudinary via unsigned preset — no API key needed ──
+    const formData=new FormData();
+    formData.append('file', selectedFile);
+    formData.append('upload_preset', CLOUDINARY_PRESET);
+    formData.append('folder', 'ab-events/gallery');
+
+    bar.style.width='35%';
+    const res=await fetch(
+      `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`,
+      {method:'POST', body:formData}
     );
+    bar.style.width='70%';
+    if(!res.ok){
+      const errData=await res.json().catch(()=>({}));
+      throw new Error(errData.error?.message||`HTTP ${res.status} — check your Cloud Name and Preset`);
+    }
+    const data=await res.json();
+    const url=data.secure_url;
+    bar.style.width='85%';
+
+    // ── Save URL + metadata to Firestore ──
+    await addDoc(collection(db,'gallery'),{
+      url,
+      service:svc,
+      eventCategory:eventCat,
+      caption:caption||eventCat,
+      cloudinaryId:data.public_id,
+      uploadedAt:serverTimestamp()
+    });
+    bar.style.width='100%';
+    setTimeout(()=>{prog.style.display='none'; bar.style.width='0%';},600);
+    msg.innerHTML='<span class="msg-ok">✓ Photo uploaded and live on customer site!</span>';
+    btn.textContent='Upload Photo →'; btn.disabled=true;
+    selectedFile=null;
+    document.getElementById('uploadPreview').innerHTML='No image selected';
+    document.getElementById('uploadCaption').value='';
+    document.getElementById('uploadService').value='';
+    document.getElementById('uploadEventCat').value='';
+    document.getElementById('photoFileInput').value='';
+    showToast('📸 Photo uploaded successfully!');
+    await loadGallery();
   } catch(err){
-    msg.innerHTML=`<span class="msg-err">Error: ${err.message}</span>`;
+    prog.style.display='none'; bar.style.width='0%';
+    msg.innerHTML='<span class="msg-err">Upload failed: '+err.message+'</span>';
     btn.disabled=false; btn.textContent='Upload Photo →';
   }
 };
 
+// dual filters – svc & event category
+let _galSvc='', _galCat='';
+
 function renderAdminGallery(){
   const grid=document.getElementById('adminGalleryGrid');
-  let photos=allGallery;
-  if(currentGalleryFilter) photos=photos.filter(p=>p.service===currentGalleryFilter);
-  if(!photos.length){grid.innerHTML='<div class="gga-empty">No photos uploaded yet. Use the upload form above to add images.</div>';return;}
+  let photos=[...allGallery];
+  if(_galSvc) photos=photos.filter(p=>p.service===_galSvc);
+  if(_galCat) photos=photos.filter(p=>p.eventCategory===_galCat);
+  const total=photos.length;
+  const sub=document.getElementById('gallerySubtitle');
+  if(sub) sub.textContent=total+' photo'+(total!==1?'s':'')+' uploaded';
+  if(!total){
+    grid.innerHTML='<div class="gga-empty">No photos match this filter. Upload new photos or try a different filter.</div>';
+    return;
+  }
   grid.innerHTML=photos.map(p=>`
     <div class="gga-item">
       <img src="${p.url}" alt="${p.caption||''}" loading="lazy"/>
       <div class="gga-overlay">
-        <div class="gga-svc">${(p.service||'').split(' ').slice(0,2).join(' ')}</div>
-        ${p.caption?`<div style="font-size:.65rem;color:rgba(255,255,255,.6);text-align:center;padding:0 6px">${p.caption}</div>`:''}
-        <button class="gga-del" onclick="deletePhoto('${p.id}','${(p.storagePath||'').replace(/'/g,"\\'")  }')">🗑 Delete</button>
+        <div class="gga-svc" style="font-size:.68rem;font-weight:600;color:var(--gold)">${(p.service||'').split(' ').slice(0,2).join(' ')}</div>
+        <div style="font-size:.62rem;color:rgba(201,168,76,.7);margin-top:1px">${p.eventCategory||''}</div>
+        ${p.caption?`<div style="font-size:.63rem;color:rgba(255,255,255,.55);text-align:center;padding:2px 6px 0">${p.caption}</div>`:''}
+        <button class="gga-del" onclick="deletePhoto('${p.id}','${(p.storagePath||'').replace(/'/g,"\'")}')">🗑 Delete</button>
       </div>
     </div>`).join('');
 }
 
-window.setGalleryFilter=(f,el)=>{
-  currentGalleryFilter=f;
-  document.querySelectorAll('#galleryFilterTabs .ftab').forEach(t=>t.classList.remove('active'));
-  el.classList.add('active');
+window.setGalSvcFilter=(f,el)=>{
+  _galSvc=f;
+  document.querySelectorAll('#galleryServiceTabs .ftab').forEach(t=>t.classList.remove('active'));
+  if(el) el.classList.add('active');
   renderAdminGallery();
 };
+window.setGalCatFilter=(f,el)=>{
+  _galCat=f;
+  document.querySelectorAll('#galleryCatTabs .ftab').forEach(t=>t.classList.remove('active'));
+  if(el) el.classList.add('active');
+  renderAdminGallery();
+};
+window.setGalleryFilter=window.setGalSvcFilter;
+
 
 window.deletePhoto=async(id,path)=>{
   if(!confirm('Delete this photo? It will be removed from the customer site.')) return;
