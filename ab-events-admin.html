@@ -694,6 +694,7 @@ tbody tr:hover td{background:var(--s2);}
 
 <!-- FIREBASE -->
 <script type="module">
+
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import{getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,onAuthStateChanged,sendPasswordResetEmail,updateProfile}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import{getFirestore,collection,getDocs,doc,getDoc,updateDoc,addDoc,deleteDoc,query,where,orderBy,serverTimestamp,onSnapshot,setDoc}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -852,7 +853,7 @@ async function loadReviews(){
         <div class="rev-admin-hdr">
           <div><span class="rev-stars-sm">${'★'.repeat(r.rating)+'☆'.repeat(5-r.rating)}</span> <strong style="font-size:.8rem;color:var(--t1)">${r.name||'Anonymous'}</strong> <span style="font-size:.68rem;color:var(--t3)">${r.event||''}</span></div>
           <div class="rev-actions">
-            ${!r.approved?`<button class="rev-approve" onclick="approveReview('${r.id}')">✓ Approve</button>`:''}
+            ${!r.approved?('<button class="rev-approve" onclick="approveReview(\''+r.id+'\')">Approve</button>'):''}
             <button class="rev-reject" onclick="deleteReview('${r.id}')">🗑 Delete</button>
           </div>
         </div>
@@ -1092,11 +1093,7 @@ function renderKanban(){
     const cards=allBookings.filter(b=>(b.pipeline||'New Enquiry')===stage);
     return `<div class="kb-col" ondragover="event.preventDefault();this.classList.add('kb-drag-over')" ondragleave="this.classList.remove('kb-drag-over')" ondrop="dropOnStage(event,'${stage}',this)">
       <div class="kb-col-hdr" style="color:${STAGE_COLORS[si]}">${stage}<span class="kb-col-count">${cards.length}</span></div>
-      ${cards.map(b=>`<div class="kb-card" draggable="true" ondragstart="dragCard(event,'${b.id}')" onclick="viewDetail('${b.id}')">
-        <div class="kb-card-name">${b.name||b.userEmail||'—'}</div>
-        <div class="kb-card-svc">${(b.service||'—').split(' ').slice(0,3).join(' ')}</div>
-        <div class="kb-card-date">📅 ${b.eventDate||'Date TBD'}</div>
-      </div>`).join('')}
+      ${cards.map(b=>'<div class="kb-card" draggable="true" ondragstart="dragCard(event,\''+b.id+'\')" onclick="viewDetail(\''+b.id+'\')">'+'<div class="kb-card-name">'+(b.name||b.userEmail||'&mdash;')+'</div><div class="kb-card-svc">'+(b.service||'&mdash;').split(' ').slice(0,3).join(' ')+'</div><div class="kb-card-date">&#128197; '+(b.eventDate||'Date TBD')+'</div></div>').join('')}
     </div>`;
   }).join('');
 }
@@ -1135,8 +1132,8 @@ function renderRows(tbodyId,data,short=false){
       <td><span class="bdg ${sCls}">${b.pipeline||b.status==='pending'?'New Enquiry':(b.status||'New Enquiry')}</span></td>
       <td><div class="act-btns">
         <button class="act-btn act-view" onclick="viewDetail('${b.id}')">View</button>
-        ${b.status!=='confirmed'?`<button class="act-btn act-ok" onclick="updateStatus('${b.id}','confirmed')">✓</button>`:''}
-        ${b.status!=='declined'?`<button class="act-btn act-no" onclick="updateStatus('${b.id}','declined')">✕</button>`:''}
+        ${b.status!=='confirmed'?'<button class="act-btn act-ok" onclick="updateStatus(\''+b.id+'\',\'confirmed\')">&#10003;</button>':''}
+        ${b.status!=='declined'?'<button class="act-btn act-no" onclick="updateStatus(\''+b.id+'\',\'declined\')">&#10005;</button>':''}
       </div></td>
     </tr>`;
   }).join('');
@@ -1223,69 +1220,49 @@ async function sendBookingNotification(bookingId,status){
 window.viewDetail=id=>{
   const b=allBookings.find(b=>b.id===id);if(!b)return;
   curDetailId=id;
-  const dt=b.eventDate?new Date(b.eventDate).toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'}):' — ';
-  const sub=b.createdAt?new Date(b.createdAt.seconds*1000).toLocaleString('en-IN'):' — ';
+  const dt=b.eventDate?new Date(b.eventDate).toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'}):'—';
+  const sub=b.createdAt?new Date(b.createdAt.seconds*1000).toLocaleString('en-IN'):'—';
   const mod=b.modifiedAt?new Date(b.modifiedAt.seconds*1000).toLocaleString('en-IN'):null;
-  document.getElementById('dpBody').innerHTML=`
-    <div class="dp-sec">
-      <div class="dp-sec-ttl">Client Information</div>
-      <div class="dp-row"><span class="dp-key">Name</span><span class="dp-val">${b.name||'—'}</span></div>
-      <div class="dp-row"><span class="dp-key">Email</span><span class="dp-val">${b.email||'—'}</span></div>
-      <div class="dp-row"><span class="dp-key">Phone</span><span class="dp-val">${b.phone||'—'}</span></div>
-      <div class="dp-row"><span class="dp-key">Type</span><span class="dp-val">${b.isGuest?'👤 Guest':'✓ Registered'}</span></div>
-    </div>
-    <div class="dp-sec">
-      <div class="dp-sec-ttl">Event Details</div>
-      <div class="dp-row"><span class="dp-key">Service</span><span class="dp-val">${b.service||'—'}</span></div>
-      <div class="dp-row"><span class="dp-key">Event Type</span><span class="dp-val">${b.eventType||'—'}</span></div>
-      <div class="dp-row"><span class="dp-key">Event Date</span><span class="dp-val">${dt}</span></div>
-      <div class="dp-row"><span class="dp-key">Budget</span><span class="dp-val" style="color:var(--gold)">${b.budget||'—'}</span></div>
-      <div class="dp-row"><span class="dp-key">Venue</span><span class="dp-val">${b.venue||'—'}</span></div>
-      <div class="dp-row"><span class="dp-key">Submitted</span><span class="dp-val">${sub}</span></div>
-      ${mod?`<div class="dp-row"><span class="dp-key">Modified</span><span class="dp-val" style="color:var(--purple)">${mod}</span></div>`:''}
-      <div class="dp-row"><span class="dp-key">Pipeline</span><span class="dp-val">${b.pipeline||'New Enquiry'}</span></div>
-    </div>
-    ${b.message?`<div class="dp-sec"><div class="dp-sec-ttl">Client's Vision</div><div style="font-size:.78rem;line-height:1.7;color:var(--t2)">${b.message}</div></div>`:''}
-    <div class="dp-sec">
-      <div class="dp-sec-ttl">Assign Staff Member</div>
-      <div style="font-size:.72rem;color:var(--t3);margin-bottom:8px;">Assign a team member to manage this event.</div>
-      <select id="staffAssignSelect" class="lf-input" style="margin-bottom:8px;" onchange="assignStaffToBooking('${id}',this.value)">
-        <option value="">— Select Staff Member —</option>
-        ${allStaff.map(s=>`<option value="${s.name}" ${b.assignedStaff===s.name?'selected':''}>${s.name} (${s.role})</option>`).join('')}
-      </select>
-      ${b.assignedStaff?`<div style="font-size:.75rem;color:var(--green);">✓ Assigned to: <strong>${b.assignedStaff}</strong></div>`:''}
-    </div>
-    <div class="dp-sec">
-      <div class="dp-sec-ttl">Status &amp; Actions</div>
-      <span class="bdg bdg-${b.status||'pending'}" style="font-size:.75rem;padding:5px 13px;display:inline-block;margin-bottom:12px">${b.pipeline||b.status||'New Enquiry'}</span>
-      <div class="dp-actions">
-        <button class="dp-btn dp-ok" onclick="updateStatus('${id}','confirmed')">✓ Confirm</button>
-        <button class="dp-btn dp-no" onclick="updateStatus('${id}','declined')">✕ Decline</button>
-        <button class="dp-btn dp-mod" onclick="openKanbanMove('${id}')">📋 Move Stage</button>
-      </div>
-    </div>
-    <div class="dp-sec">
-      <div class="dp-sec-ttl">Final Price (after discussion)</div>
-      <div style="font-size:.75rem;color:var(--t3);margin-bottom:6px;">Enter the agreed final price to show on customer's booking.</div>
-      <div class="price-input-wrap">
-        <input type="text" id="finalPriceInput" placeholder="e.g. ₹2,50,000" value="${b.finalPrice||''}" />
-        <button class="price-save-btn" onclick="saveFinalPrice('${id}')">Save Price</button>
-      </div>
-      <div id="priceSaveMsg" style="font-size:.72rem;margin-top:6px;color:var(--green);"></div>
-    </div>
-    <div class="dp-sec">
-      <div class="dp-sec-ttl">Admin Notes</div>
-      <textarea class="note-ta" id="noteTA" placeholder="Internal notes…">${b.adminNote||''}</textarea>
-      <button class="note-save" onclick="saveNote('${id}')">Save Note</button>
-    </div>
-`;
+  const modRow=mod?'<div class="dp-row"><span class="dp-key">Modified</span><span class="dp-val" style="color:var(--purple)">'+mod+'</span></div>':'';
+  const msgSec=b.message?'<div class="dp-sec"><div class="dp-sec-ttl">Client's Vision</div><div style="font-size:.78rem;line-height:1.7;color:var(--t2)">'+b.message+'</div></div>':'';
+  const staffOpts=allStaff.map(s=>'<option value="'+s.name+'" '+(b.assignedStaff===s.name?'selected':'')+'>'+(s.name)+' ('+(s.role)+')</option>').join('');
+  const staffDone=b.assignedStaff?'<div style="font-size:.75rem;color:var(--green);">&#10003; Assigned to: <strong>'+b.assignedStaff+'</strong></div>':'';
+  document.getElementById('dpBody').innerHTML=
+    '<div class="dp-sec"><div class="dp-sec-ttl">Client Information</div>'+
+    '<div class="dp-row"><span class="dp-key">Name</span><span class="dp-val">'+(b.name||'&mdash;')+'</span></div>'+
+    '<div class="dp-row"><span class="dp-key">Email</span><span class="dp-val">'+(b.email||'&mdash;')+'</span></div>'+
+    '<div class="dp-row"><span class="dp-key">Phone</span><span class="dp-val">'+(b.phone||'&mdash;')+'</span></div>'+
+    '<div class="dp-row"><span class="dp-key">Type</span><span class="dp-val">'+(b.isGuest?'Guest':'Registered')+'</span></div></div>'+
+    '<div class="dp-sec"><div class="dp-sec-ttl">Event Details</div>'+
+    '<div class="dp-row"><span class="dp-key">Service</span><span class="dp-val">'+(b.service||'&mdash;')+'</span></div>'+
+    '<div class="dp-row"><span class="dp-key">Event Type</span><span class="dp-val">'+(b.eventType||'&mdash;')+'</span></div>'+
+    '<div class="dp-row"><span class="dp-key">Event Date</span><span class="dp-val">'+dt+'</span></div>'+
+    '<div class="dp-row"><span class="dp-key">Budget</span><span class="dp-val" style="color:var(--gold)">'+(b.budget||'&mdash;')+'</span></div>'+
+    '<div class="dp-row"><span class="dp-key">Venue</span><span class="dp-val">'+(b.venue||'&mdash;')+'</span></div>'+
+    '<div class="dp-row"><span class="dp-key">Submitted</span><span class="dp-val">'+sub+'</span></div>'+modRow+
+    '<div class="dp-row"><span class="dp-key">Pipeline</span><span class="dp-val">'+(b.pipeline||'New Enquiry')+'</span></div></div>'+
+    msgSec+
+    '<div class="dp-sec"><div class="dp-sec-ttl">Assign Staff Member</div>'+
+    '<select id="staffAssignSelect" class="lf-input" style="margin-bottom:8px;" onchange="assignStaffToBooking(''+id+'',this.value)">'+
+    '<option value="">-- Select Staff Member --</option>'+staffOpts+'</select>'+staffDone+'</div>'+
+    '<div class="dp-sec"><div class="dp-sec-ttl">Status &amp; Actions</div>'+
+    '<span class="bdg bdg-'+(b.status||'pending')+'" style="font-size:.75rem;padding:5px 13px;display:inline-block;margin-bottom:12px">'+(b.pipeline||b.status||'New Enquiry')+'</span>'+
+    '<div class="dp-actions">'+
+    '<button class="dp-btn dp-ok" onclick="updateStatus(''+id+'','confirmed')">Confirm</button>'+
+    '<button class="dp-btn dp-no" onclick="updateStatus(''+id+'','declined')">Decline</button>'+
+    '<button class="dp-btn dp-mod" onclick="openKanbanMove(''+id+'')">Move Stage</button>'+
+    '</div></div>'+
+    '<div class="dp-sec"><div class="dp-sec-ttl">Final Price (after discussion)</div>'+
+    '<div style="font-size:.75rem;color:var(--t3);margin-bottom:6px;">Enter the agreed final price to show on customer's booking.</div>'+
+    '<div class="price-input-wrap"><input type="text" id="finalPriceInput" placeholder="e.g. Rs.2,50,000" value="'+(b.finalPrice||'')+'" />'+
+    '<button class="price-save-btn" onclick="saveFinalPrice(''+id+'')">Save Price</button></div>'+
+    '<div id="priceSaveMsg" style="font-size:.72rem;margin-top:6px;color:var(--green);"></div></div>'+
+    '<div class="dp-sec"><div class="dp-sec-ttl">Admin Notes</div>'+
+    '<textarea class="note-ta" id="noteTA" placeholder="Internal notes...">'+(b.adminNote||'')+'</textarea>'+
+    '<button class="note-save" onclick="saveNote(''+id+'')">Save Note</button></div>';
   document.getElementById('detailOv').classList.add('open');
 };
- - ${b.service||''}`);
-  const details=encodeURIComponent(`Budget: ${b.budget||'—'}\nVenue: ${b.venue||'—'}\nPhone: ${b.phone||'—'}\nEmail: ${b.email||'—'}`);
-  const loc=encodeURIComponent(b.venue||'Hyderabad');
-  return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${dt}/${dt}&details=${details}&location=${loc}`;
-}
+
 window.saveFinalPrice=async(id)=>{
   const price=document.getElementById('finalPriceInput').value.trim();
   const msg=document.getElementById('priceSaveMsg');
@@ -1461,7 +1438,7 @@ function renderAdminGallery(){
       <div class="gga-overlay">
         <div class="gga-svc">${(p.service||'').split(' ').slice(0,2).join(' ')}</div>
         <div style="font-size:.6rem;color:rgba(201,168,76,.7)">${p.eventCategory||''}</div>
-        ${p.caption?`<div style="font-size:.6rem;color:rgba(255,255,255,.5);text-align:center">${p.caption}</div>`:''}
+        ${p.caption?'<div style="font-size:.6rem;color:rgba(255,255,255,.5);text-align:center">'+p.caption+'</div>':''}
         <button class="gga-del" onclick="deletePhoto('${p.id}','${(p.storagePath||'').replace(/'/g,"\'")}')">🗑 Delete</button>
       </div>
     </div>`).join('');
@@ -1506,6 +1483,7 @@ window.saveSettings=async()=>{
   }catch(e){document.getElementById('settingsMsg').innerHTML='<span style="color:var(--red)">'+e.message+'</span>';}
 };
 window.showToast=showToast;
+
 </script>
 
 <script>
