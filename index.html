@@ -6,7 +6,7 @@
 <title>AB Events &amp; Decors — Dream Events, Crafted Perfectly</title>
 <meta name="theme-color" content="#C9A84C"/>
 <link rel="manifest" href="manifest.json"/>
-<link rel="manifest" href="manifest.json"/>
+
 <meta name="theme-color" content="#C9A84C"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
@@ -78,6 +78,8 @@ body.has-banner nav{top:40px;}
 .wa-fab{position:fixed;bottom:28px;right:28px;z-index:800;width:58px;height:58px;background:#25D366;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(37,211,102,.45);cursor:pointer;transition:var(--tr);text-decoration:none;}
 .wa-fab:hover{transform:scale(1.08);box-shadow:0 6px 28px rgba(37,211,102,.55);}
 .wa-fab svg{width:30px;height:30px;fill:#fff;}
+.wa-chip{background:#fff;color:#111;border-radius:18px 18px 4px 18px;padding:10px 16px;font-size:.8rem;max-width:240px;box-shadow:0 4px 16px rgba(0,0,0,.2);cursor:pointer;font-family:var(--fb);transition:all .2s;line-height:1.4;}
+.wa-chip:hover{background:#f0f0f0;transform:translateX(-4px);}
 .wa-tooltip{position:absolute;right:68px;background:var(--dark2);color:var(--cream);font-size:.72rem;padding:6px 12px;border-radius:var(--r);white-space:nowrap;opacity:0;pointer-events:none;transition:var(--tr);border:1px solid rgba(201,168,76,.15);}
 .wa-fab:hover .wa-tooltip{opacity:1;}
 
@@ -224,11 +226,11 @@ section{padding:88px 0;}
 /* Map picker */
 .map-wrap{border:1px solid rgba(201,168,76,.15);border-radius:var(--r);overflow:hidden;margin-top:6px;}
 .map-wrap iframe{width:100%;height:200px;border:none;display:block;}
-.map-note{font-size:.7rem;color:var(--muted);margin-top:5px;}
+
 /* location input with pin button */
-.loc-row{display:flex;gap:8px;}
+
 .loc-row .fi{flex:1;}
-.loc-pin-btn{background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.25);color:var(--gold);padding:0 12px;border-radius:var(--r);cursor:pointer;font-size:1.1rem;flex-shrink:0;transition:var(--tr);}
+
 .loc-pin-btn:hover{background:rgba(201,168,76,.2);}
 /* duplicate booking warning */
 .dup-warn{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);color:#F59E0B;padding:10px 14px;border-radius:var(--r);font-size:.78rem;margin-bottom:14px;display:none;}
@@ -351,6 +353,15 @@ footer{background:var(--dark);border-top:1px solid rgba(201,168,76,.1);padding:5
 </head>
 <body>
 
+<!-- FIRESTORE RULES NOTICE (remove after setup) -->
+<div id="firestoreNotice" style="display:none;position:fixed;bottom:90px;left:20px;right:20px;max-width:400px;background:#1a1a1a;border:1px solid #C9A84C;border-radius:8px;padding:14px 16px;z-index:8000;font-size:.76rem;color:#C9A84C;box-shadow:0 8px 32px rgba(0,0,0,.6);">
+  <div style="font-weight:600;margin-bottom:6px;">⚠️ Firebase Setup Required</div>
+  <div style="color:#aaa;line-height:1.6;">Bookings failed to load. Go to <strong style="color:#C9A84C">Firebase Console → Firestore → Rules</strong> and publish:<br>
+  <code style="background:#111;padding:3px 8px;border-radius:4px;display:inline-block;margin:6px 0;font-size:.7rem;">allow read, write: if request.auth != null;</code><br>
+  Also create a <strong style="color:#C9A84C">Firestore database</strong> if you haven't already.</div>
+  <button onclick="document.getElementById('firestoreNotice').style.display='none'" style="margin-top:8px;background:none;border:1px solid #C9A84C;color:#C9A84C;padding:4px 12px;border-radius:4px;cursor:pointer;font-size:.7rem;">Dismiss</button>
+</div>
+
 <!-- MAINTENANCE BANNER -->
 <div id="maintenanceBanner">🔧 We are performing scheduled maintenance. The site will be back shortly. Thank you for your patience.</div>
 
@@ -442,12 +453,17 @@ footer{background:var(--dark);border-top:1px solid rgba(201,168,76,.1);padding:5
     <div class="cat-filter-wrap">
       <button class="cat-btn active" onclick="filterGallery('all',this)">🎊 All</button>
       <button class="cat-btn" onclick="filterGallery('Wedding',this)">💍 Wedding</button>
+      <button class="cat-btn" onclick="filterGallery('Reception',this)">🎉 Reception</button>
       <button class="cat-btn" onclick="filterGallery('Engagement',this)">💝 Engagement</button>
+      <button class="cat-btn" onclick="filterGallery('Sangeet',this)">🎶 Sangeet</button>
+      <button class="cat-btn" onclick="filterGallery('Mehendi',this)">🌿 Mehendi</button>
       <button class="cat-btn" onclick="filterGallery('Baby Shower',this)">👶 Baby Shower</button>
       <button class="cat-btn" onclick="filterGallery('Birthday',this)">🎂 Birthday</button>
       <button class="cat-btn" onclick="filterGallery('Anniversary',this)">🌹 Anniversary</button>
       <button class="cat-btn" onclick="filterGallery('Housewarming',this)">🏠 Housewarming</button>
       <button class="cat-btn" onclick="filterGallery('Corporate',this)">🏢 Corporate</button>
+      <button class="cat-btn" onclick="filterGallery('Farewell',this)">👋 Farewell</button>
+      <button class="cat-btn" onclick="filterGallery('Naming Ceremony',this)">🍼 Naming Ceremony</button>
     </div>
   </div>
   <div class="con" style="margin-top:28px;">
@@ -479,8 +495,8 @@ footer{background:var(--dark);border-top:1px solid rgba(201,168,76,.1);padding:5
         <p>Ready to turn your vision into reality? Sign in, create an account, or continue as a guest. Our event specialists will reach out within 24 hours.</p>
         <div class="bk-contacts">
           <div class="c-item"><div class="c-icon">📍</div><span>Jubilee Hills, Hyderabad, Telangana</span></div>
-          <div class="c-item"><div class="c-icon">📞</div><span>+91 98765 43210</span></div>
-          <div class="c-item"><div class="c-icon">✉️</div><span>hello@abevents.in</span></div>
+          <div class="c-item"><div class="c-icon">📞</div><span>+91 7386030321</span></div>
+          <div class="c-item"><div class="c-icon">✉️</div><span><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="e9818c858586a9888b8c9f8c879d9ac78087">[email&#160;protected]</a></span></div>
           <div class="c-item"><div class="c-icon">🕐</div><span>Mon–Sat: 10 AM – 7 PM</span></div>
         </div>
       </div>
@@ -522,9 +538,10 @@ footer{background:var(--dark);border-top:1px solid rgba(201,168,76,.1);padding:5
               <select class="fs" id="bkEventType">
                 <option value="">Select type</option>
                 <option>Wedding</option><option>Reception</option><option>Engagement</option>
+                <option>Sangeet</option><option>Mehendi</option>
                 <option>Birthday Party</option><option>Corporate Event</option>
                 <option>Anniversary</option><option>Baby Shower</option>
-                <option>Housewarming</option><option>Other</option>
+                <option>Housewarming</option><option>Naming Ceremony</option><option>Farewell</option><option>Other</option>
               </select>
             </div>
           </div>
@@ -548,11 +565,7 @@ footer{background:var(--dark);border-top:1px solid rgba(201,168,76,.1);padding:5
           </div>
           <div class="fg">
             <label class="fl">Venue / Location *</label>
-            <div class="loc-row">
-              <input class="fi" id="bkVenue" placeholder="Venue name or area" required/>
-              <button type="button" class="loc-pin-btn" onclick="detectLocation()" title="Use my current location">📍</button>
-            </div>
-            <div class="map-note">Tap 📍 to auto-detect location, or type your venue address</div>
+            <input class="fi" id="bkVenue" placeholder="e.g. Taj Falaknuma, Hyderabad" required/>
           </div>
           <div class="fg"><label class="fl">Tell Us Your Vision</label><textarea class="fta" id="bkMsg" placeholder="Describe your dream event — theme, colours, special requirements…"></textarea></div>
           <button type="submit" class="sub-btn" id="subBtn">Send Booking Request →</button>
@@ -611,7 +624,7 @@ footer{background:var(--dark);border-top:1px solid rgba(201,168,76,.1);padding:5
       <div><div class="ft-brand">AB Events &amp; Decors</div><p class="ft-about">Hyderabad's most trusted event studio since 2012. Every celebration deserves to be extraordinary — crafted with passion and delivered with perfection.</p></div>
       <div><div class="ft-h">Services</div><div class="ft-links"><a href="#services">Decor &amp; Styling</a><a href="#services">Photography</a><a href="#services">Music &amp; DJ</a><a href="#services">Lighting</a></div></div>
       <div><div class="ft-h">Company</div><div class="ft-links"><a href="#process">Our Process</a><a href="#reviews">Reviews</a><a href="#booking">Contact</a></div></div>
-      <div><div class="ft-h">Connect</div><div class="ft-links"><a href="#">Instagram</a><a href="#">Facebook</a><a href="#">Pinterest</a><a href="#">YouTube</a><a href="ab-events-admin.html" style="color:var(--gold)">Admin Portal ↗</a></div></div>
+      <div><div class="ft-h">Connect</div><div class="ft-links"><a href="#">Instagram</a><a href="#">Facebook</a><a href="#">Pinterest</a><a href="#">YouTube</a></div></div>
     </div>
     <div class="ft-btm"><div class="ft-copy">© 2025 AB Events &amp; Decors. All rights reserved.</div><div class="ft-copy">Privacy · Terms</div></div>
   </div>
@@ -702,16 +715,26 @@ footer{background:var(--dark);border-top:1px solid rgba(201,168,76,.1);padding:5
   </div>
 </div>
 
-<!-- WHATSAPP FAB -->
-<a class="wa-fab" id="waFab" href="#" target="_blank" rel="noopener" title="Chat on WhatsApp">
-  <div class="wa-tooltip">Chat with us on WhatsApp</div>
-  <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.558 4.112 1.528 5.834L0 24l6.335-1.65A11.937 11.937 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.006-1.374l-.36-.214-3.727.977.993-3.63-.234-.373A9.818 9.818 0 012.182 12C2.182 6.57 6.57 2.182 12 2.182S21.818 6.57 21.818 12 17.43 21.818 12 21.818z"/></svg>
-</a>
+<!-- WHATSAPP FAB + SUGGESTIONS PANEL -->
+<div id="waWrap" style="position:fixed;bottom:28px;right:28px;z-index:800;display:flex;flex-direction:column;align-items:flex-end;gap:10px;">
+  <!-- Suggestion bubbles — using data-msg to avoid quote escaping issues -->
+  <div id="waSuggestions" style="display:none;flex-direction:column;gap:8px;align-items:flex-end;">
+    <div class="wa-chip" data-msg="Hi AB Events! I would like to enquire about your event services. Could you please share your packages and pricing?">💬 Enquire about services &amp; pricing</div>
+    <div class="wa-chip" data-msg="Hi! I am planning a wedding and would like to know more about your wedding decoration packages.">💍 Wedding decoration packages</div>
+    <div class="wa-chip" data-msg="Hello! I have a birthday event coming up and need decor, lighting and photography. Can you help?">🎂 Birthday event planning</div>
+    <div class="wa-chip" data-msg="Hi AB Events! I already submitted a booking request on your website. Could you please confirm the status?">📋 Check my booking status</div>
+    <div class="wa-chip" data-msg="Hello! I would like to schedule a consultation call with your team to discuss my event requirements.">📞 Schedule a consultation call</div>
+  </div>
+  <!-- Main FAB button -->
+  <button class="wa-fab" id="waFab" onclick="toggleWASuggestions()" title="Chat on WhatsApp" style="border:none;cursor:pointer;">
+    <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.558 4.112 1.528 5.834L0 24l6.335-1.65A11.937 11.937 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.006-1.374l-.36-.214-3.727.977.993-3.63-.234-.373A9.818 9.818 0 012.182 12C2.182 6.57 6.57 2.182 12 2.182S21.818 6.57 21.818 12 17.43 21.818 12 21.818z"/></svg>
+  </button>
+</div>
 
 <div class="toast" id="toast"></div>
 
 <!-- ══ FIREBASE ══ -->
-<script type="module">
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail, updateProfile } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, collection, addDoc, query, where, getDocs, getDoc, doc, updateDoc, orderBy, serverTimestamp, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -920,7 +943,8 @@ window.submitBooking = async (ev) => {
     showToast('Booking submitted! 🎊');
     // WhatsApp confirmation
     const waMsgEnc = encodeURIComponent(`Hi AB Events! My booking for *${svc}* on ${document.getElementById('bkDate').value||'TBD'} has been submitted. Please confirm at your earliest.`);
-    document.getElementById('waFab').href=`https://wa.me/919876543210?text=${waMsgEnc}`;
+    // Pre-fill WA suggestion with booking details
+    window._lastBookingMsg = `Hi AB Events! My booking for *${svc}* on ${document.getElementById('bkDate').value||'TBD'} has been submitted. Please confirm at your earliest. Name: ${document.getElementById('bkName').value}`;
   } catch(err){ st.innerHTML=`<span class="s-err">Error: ${err.message}</span>`; }
   btn.disabled=false; btn.textContent='Send Booking Request →';
 };
@@ -930,14 +954,18 @@ async function loadMyBookings(uid) {
   const list = document.getElementById('bkList');
   list.innerHTML='<div class="empty-st">Loading…</div>';
   try {
-    const q = query(collection(db,'bookings'),where('userId','==',uid),orderBy('createdAt','desc'));
+    // Simple query without orderBy — avoids composite index requirement
+    const q = query(collection(db,'bookings'),where('userId','==',uid));
     const snap = await getDocs(q);
     myBookings = snap.docs.map(d=>({id:d.id,...d.data()}));
+    // Sort client-side — no Firestore composite index needed
+    myBookings.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
     if(snap.empty){ list.innerHTML='<div class="empty-st">No bookings yet. <a href="#booking" style="color:var(--gold)">Make your first request →</a></div>'; return; }
     const icons={'Luxury Decor & Styling':'🌸','Professional Photography':'📷','Live Music & Entertainment':'🎵','Premium Lighting Design':'✨','Gourmet Catering':'🍽️','Complete Event Management':'🎊','Multiple Services':'🎉'};
     list.innerHTML = myBookings.map(b=>{
-      const sc=b.status==='confirmed'?'bk-confirmed':b.status==='declined'?'bk-declined':'bk-pending';
-      const sl=b.status==='confirmed'?'✓ Confirmed':b.status==='declined'?'✕ Declined':'⏳ Pending';
+      const sc=b.status==='confirmed'||b.status==='completed'?'bk-confirmed':b.status==='declined'?'bk-declined':b.status==='pending'||b.status==='New Enquiry'?'bk-pending':'bk-pending';
+      const statusMap={'New Enquiry':'🔔 New Enquiry','pending':'🔔 New Enquiry','consultation':'📞 Consultation Scheduled','proposal':'📋 Proposal Sent','confirmed':'✅ Confirmed','declined':'✕ Declined','completed':'🎊 Completed'};
+      const sl=statusMap[b.status]||statusMap[b.pipeline]||'🔔 New Enquiry';
       const dt=b.eventDate?new Date(b.eventDate).toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'}):'Date TBD';
       const canModify = b.status==='pending';
       const priceHtml = b.finalPrice?`<div class="bk-price">💰 Final Price: ${b.finalPrice}</div>`:'';
@@ -956,7 +984,15 @@ async function loadMyBookings(uid) {
     // Check for confirmed booking for review
     const hasConfirmed = myBookings.some(b=>b.status==='confirmed');
     if(hasConfirmed) document.getElementById('revSubmitCard').classList.remove('hidden');
-  } catch(err){ list.innerHTML='<div class="empty-st">Could not load bookings.</div>'; }
+  } catch(err){
+    console.error('Bookings load error:', err);
+    list.innerHTML='<div class="empty-st">Could not load bookings.<br><small style="color:#888;font-size:.7rem;">'+err.message+'</small><br><a href="#" onclick="window._loadMyBookings(window._auth?.currentUser?.uid);return false;" style="color:var(--gold);font-size:.8rem;">↺ Try again</a></div>';
+    // Show setup notice if it looks like a rules/permissions issue
+    if(err.message && (err.message.includes('permission') || err.message.includes('Missing') || err.message.includes('insufficient'))){
+      const notice=document.getElementById('firestoreNotice');
+      if(notice) notice.style.display='block';
+    }
+  }
 }
 window._loadMyBookings = loadMyBookings;
 
@@ -1027,8 +1063,9 @@ window.loadSvcGallery = async (name) => {
 // ── REVIEWS ──
 async function loadReviews(){
   try{
-    const snap=await getDocs(query(collection(db,'reviews'),where('approved','==',true),orderBy('createdAt','desc')));
-    const revs=snap.docs.map(d=>({id:d.id,...d.data()}));
+    // Fetch without orderBy to avoid composite index requirement, sort client-side
+    const snap=await getDocs(query(collection(db,'reviews'),where('approved','==',true)));
+    const revs=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
     // Stars avg
     if(revs.length){
       const avg=(revs.reduce((a,r)=>a+r.rating,0)/revs.length).toFixed(1);
@@ -1088,9 +1125,10 @@ window.submitReview=async()=>{
 
 // ── CUSTOMER NOTIFICATIONS ──
 function loadCustomerNotifications(uid){
-  const q=query(collection(db,'notifications'),where('userId','==',uid),orderBy('createdAt','desc'));
+  // Use simple where query to avoid composite index requirement
+  const q=query(collection(db,'notifications'),where('userId','==',uid));
   onSnapshot(q,snap=>{
-    const notifs=snap.docs.map(d=>({id:d.id,...d.data()}));
+    const notifs=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
     const unread=notifs.filter(n=>!n.read).length;
     const badge=document.getElementById('custNotifBadge');
     if(unread>0){badge.textContent=unread;badge.classList.add('show');}else{badge.classList.remove('show');}
@@ -1105,8 +1143,8 @@ window.readNotif=async(id)=>{
 window.markAllRead=async(e)=>{
   e.stopPropagation();
   if(!currentUser)return;
-  const snap=await getDocs(query(collection(db,'notifications'),where('userId','==',currentUser.uid),where('read','==',false)));
-  snap.docs.forEach(d=>updateDoc(doc(db,'notifications',d.id),{read:true}));
+  const snap=await getDocs(query(collection(db,'notifications'),where('userId','==',currentUser.uid)));
+  snap.docs.filter(d=>!d.data().read).forEach(d=>updateDoc(doc(db,'notifications',d.id),{read:true}));
 };
 
 function fe(c){const m={'auth/user-not-found':'No account with that email.','auth/wrong-password':'Incorrect password.','auth/invalid-credential':'Invalid email or password.','auth/email-already-in-use':'Email already registered.','auth/weak-password':'Password needs 6+ characters.','auth/invalid-email':'Invalid email address.','auth/too-many-requests':'Too many attempts. Try later.','auth/missing-password':'Please enter your password.'};return m[c]||'Something went wrong. Try again.';}
@@ -1198,6 +1236,16 @@ const STATIC_GALLERY=[
   {url:'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=800&q=80',caption:'Birthday Live Music',eventCategory:'Birthday',service:'Live Music & Entertainment'},
   {url:'https://images.unsplash.com/photo-1478146059778-26028b07395a?w=800&q=80',caption:'Anniversary Decor',eventCategory:'Anniversary',service:'Luxury Decor & Styling'},
   {url:'https://images.unsplash.com/photo-1567337710282-00832b415979?w=800&q=80',caption:'Anniversary Dinner',eventCategory:'Anniversary',service:'Gourmet Catering'},
+  // Reception
+  {url:'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=800&q=80',caption:'Grand Reception Hall',eventCategory:'Reception',service:'Complete Event Management'},
+  {url:'https://images.unsplash.com/photo-1504196606672-aef5c9cefc92?w=800&q=80',caption:'Reception Lighting Setup',eventCategory:'Reception',service:'Premium Lighting Design'},
+  {url:'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=800&q=80',caption:'Reception Floral Decor',eventCategory:'Reception',service:'Luxury Decor & Styling'},
+  // Sangeet
+  {url:'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=800&q=80',caption:'Sangeet Night Stage',eventCategory:'Sangeet',service:'Live Music & Entertainment'},
+  {url:'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800&q=80',caption:'Sangeet Lighting & Decor',eventCategory:'Sangeet',service:'Premium Lighting Design'},
+  // Mehendi
+  {url:'https://images.unsplash.com/photo-1529543544282-ea669407fca3?w=800&q=80',caption:'Mehendi Ceremony Decor',eventCategory:'Mehendi',service:'Luxury Decor & Styling'},
+  {url:'https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=800&q=80',caption:'Mehendi Stage Setup',eventCategory:'Mehendi',service:'Luxury Decor & Styling'},
   {url:'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80',caption:'Housewarming Floral Entrance',eventCategory:'Housewarming',service:'Luxury Decor & Styling'},
   {url:'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80',caption:'Elegant Home Decor',eventCategory:'Housewarming',service:'Luxury Decor & Styling'},
   {url:'https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?w=800&q=80',caption:'Housewarming Celebration',eventCategory:'Housewarming',service:'Complete Event Management'},
@@ -1239,35 +1287,7 @@ window.closeViewer=()=>{document.getElementById('glViewer').classList.remove('op
 window.viewNav=(d)=>{vIdx=(vIdx+d+window._glImgs.length)%window._glImgs.length;showViewer();};
 
 // ── LOCATION DETECT ──
-window.detectLocation=()=>{
-  if(!navigator.geolocation){showToast('Geolocation not supported by your browser.');return;}
-  showToast('Detecting your location… 📍');
-  navigator.geolocation.getCurrentPosition(
-    pos=>{
-      const{latitude:lat,longitude:lng}=pos.coords;
-      // Reverse geocode with Nominatim (free, no API key)
-      fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
-        .then(r=>r.json())
-        .then(data=>{
-          const addr=data.display_name||`${lat.toFixed(4)}, ${lng.toFixed(4)}`;
-          document.getElementById('bkVenue').value=addr;
-          showToast('Location detected! ✓');
-        }).catch(()=>{
-          document.getElementById('bkVenue').value=`${lat.toFixed(4)}, ${lng.toFixed(4)}`;
-          showToast('Location set ✓');
-        });
-    },
-    err=>{showToast('Could not get location. Please type your venue.');}
-  );
-};
 
-// ── WHATSAPP ──
-function updateWaLink(svc='',date=''){
-  const msg=encodeURIComponent(`Hi AB Events! I'd like to enquire about *${svc||'your services'}*${date?' for '+date:''} . Please share more details.`);
-  document.getElementById('waFab').href=`https://wa.me/919876543210?text=${msg}`;
-}
-
-// ── BOOKING FORM ──
 window._guestMode=false;
 function showForm(show,guest){
   document.getElementById('bkPrompt').style.display=show||guest?'none':'block';
@@ -1297,8 +1317,18 @@ let mobOpen=false;
 window.toggleMob=()=>{mobOpen=!mobOpen;document.getElementById('mobNav').classList.toggle('open',mobOpen);document.getElementById('hamBtn').classList.toggle('open',mobOpen);};
 window.closeMob=()=>{mobOpen=false;document.getElementById('mobNav').classList.remove('open');document.getElementById('hamBtn').classList.remove('open');};
 window.toggleDrop=()=>document.getElementById('uDrop').classList.toggle('open');
+window.toggleNotifDrop=()=>{
+  const d=document.getElementById('custNotifDrop');
+  d.classList.toggle('open');
+  // close other dropdowns
+  if(d.classList.contains('open')) document.getElementById('uDrop').classList.remove('open');
+};
 window.closeDrop=()=>document.getElementById('uDrop').classList.remove('open');
-document.addEventListener('click',e=>{if(!e.target.closest('.u-wrap'))document.getElementById('uDrop').classList.remove('open');});
+document.addEventListener('click',e=>{
+  if(!e.target.closest('.u-wrap')) document.getElementById('uDrop').classList.remove('open');
+  if(!e.target.closest('.notif-wrap')) document.getElementById('custNotifDrop')?.classList.remove('open');
+  if(!e.target.closest('#waWrap')) document.getElementById('waSuggestions').style.display='none';
+});
 
 // ── AUTH MODAL ──
 window.openAuth=(tab)=>{document.getElementById('authModal').classList.add('open');switchTab(tab||'login');document.body.style.overflow='hidden';};
@@ -1313,6 +1343,25 @@ window.switchTab=(t)=>{
 document.getElementById('authModal').addEventListener('click',e=>{if(e.target===document.getElementById('authModal'))closeAuth();});
 document.getElementById('profileModal').addEventListener('click',e=>{if(e.target===document.getElementById('profileModal'))closeProfile();});
 document.getElementById('modifyModal').addEventListener('click',e=>{if(e.target===document.getElementById('modifyModal'))closeModify();});
+
+// WhatsApp helpers
+const WA_NUMBER='919876543210'; // ← Change to your WhatsApp number
+window.sendWA=(msg)=>{
+  window.open('https://wa.me/'+WA_NUMBER+'?text='+encodeURIComponent(msg),'_blank');
+  document.getElementById('waSuggestions').style.display='none';
+};
+window.toggleWASuggestions=()=>{
+  const s=document.getElementById('waSuggestions');
+  s.style.display=s.style.display==='flex'?'none':'flex';
+};
+// Event delegation for WA chip clicks
+document.addEventListener('click',function(e){
+  const chip=e.target.closest('.wa-chip');
+  if(chip){
+    const msg=chip.getAttribute('data-msg');
+    if(msg) window.sendWA(msg);
+  }
+});
 
 window.quickBook=(svc)=>{
   if(svc==='Gourmet Catering'){showToast('🍽️ Catering is coming soon! Please choose another service.');return;}
@@ -1333,9 +1382,11 @@ setTimeout(()=>{if(window.loadFirestoreGallery) window.loadFirestoreGallery();},
 
 // ── SERVICE WORKER REGISTRATION (PWA) ──
 if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('sw.js').then(reg=>{
-    console.log('SW registered');
-  }).catch(err=>{console.log('SW registration failed:',err);});
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('./sw.js')
+      .then(function(reg){ console.log('SW registered', reg.scope); })
+      .catch(function(err){ console.log('SW failed', err); });
+  });
 }
 </script>
 </body>

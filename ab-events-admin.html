@@ -180,6 +180,7 @@ tbody tr:hover td{background:var(--s2);}
 .bdg-confirmed{color:var(--green);border-color:rgba(34,197,94,.3);background:var(--green-a);}
 .bdg-declined{color:var(--red);border-color:rgba(239,68,68,.3);background:var(--red-a);}
 .bdg-new{color:var(--blue);border-color:rgba(96,165,250,.3);background:var(--blue-a);}
+.bdg-completed{color:var(--t2);border-color:rgba(153,153,168,.3);background:rgba(153,153,168,.1);}
 .bdg-modified{color:var(--purple);border-color:rgba(167,139,250,.3);background:var(--purple-a);}
 
 /* FILTERS */
@@ -455,7 +456,8 @@ tbody tr:hover td{background:var(--s2);}
         <div class="stat-card"><div class="stat-top"><div class="stat-icon-wrap" style="background:var(--purple-a)">📅</div><span class="stat-trend trend-up">Month</span></div><div class="stat-val" id="anaThisMonth">—</div><div class="stat-lbl">This Month Bookings</div><div class="stat-sub" id="anaMonthLabel">Current month</div></div>
       </div>
       <div class="two-col">
-        <div class="card"><div class="card-hdr"><div><div class="card-ttl">Monthly Booking Trend</div><div class="card-sub">Last 6 months</div></div></div><div class="card-body"><div class="rev-chart-wrap" id="revBarChart"></div></div></div>
+        <div class="card" style="margin-bottom:14px;"><div style="padding:12px 20px;font-size:.76rem;color:var(--yellow);" id="anaPendingPrice"></div></div>
+      <div class="card"><div class="card-hdr"><div><div class="card-ttl">Monthly Booking Trend</div><div class="card-sub">Last 6 months</div></div></div><div class="card-body"><div class="rev-chart-wrap" id="revBarChart"></div></div></div>
         <div class="card"><div class="card-hdr"><div><div class="card-ttl">Top Services by Demand</div></div></div><div class="card-body"><div class="mini-bar-chart" id="anaSvcChart"></div></div></div>
       </div>
       <div class="card"><div class="card-hdr"><div><div class="card-ttl">Event Type Breakdown</div><div class="card-sub">Bookings by event category</div></div></div><div class="card-body"><div class="mini-bar-chart" id="anaEventChart"></div></div></div>
@@ -480,9 +482,10 @@ tbody tr:hover td{background:var(--s2);}
         <div class="bk-filters">
           <div class="ftabs" id="statusFilterTabs">
             <button class="ftab active" onclick="setBkFilter('status','all',this)">All</button>
-            <button class="ftab" onclick="setBkFilter('status','pending',this)">⏳ Pending</button>
+            <button class="ftab" onclick="setBkFilter('status','pending',this)">🔔 New Enquiry</button>
             <button class="ftab" onclick="setBkFilter('status','confirmed',this)">✅ Confirmed</button>
             <button class="ftab" onclick="setBkFilter('status','declined',this)">✕ Declined</button>
+            <button class="ftab" onclick="setBkFilter('status','completed',this)">🎊 Completed</button>
           </div>
           <select class="bk-filter-select" id="fEventType" onchange="applyBkFilters()">
             <option value="">All Event Types</option>
@@ -948,6 +951,7 @@ document.addEventListener('click',e=>{
 
 // ── DASHBOARD ──
 function renderDashboard(){
+  autoStageBookings();
   const p=allBookings.filter(b=>b.status==='pending').length;
   const c=allBookings.filter(b=>b.status==='confirmed').length;
   document.getElementById('statTotal').textContent=allBookings.length;
@@ -966,12 +970,14 @@ function renderDashboard(){
 function renderAnalytics(){
   const confirmed=allBookings.filter(b=>b.status==='confirmed');
   const conv=allBookings.length?Math.round(confirmed.length/allBookings.length*100):0;
-  // Extract numeric budget values (rough)
-  const budgetSum=confirmed.reduce((sum,b)=>{
-    const m=b.budget?.replace(/[^0-9]/g,'');
+  // Use finalPrice only (agreed price), fallback to 0 if not set
+  const priceData=confirmed.filter(b=>b.finalPrice);
+  const priceSum=priceData.reduce((sum,b)=>{
+    const m=(b.finalPrice||'').replace(/[^0-9]/g,'');
     return sum+(parseInt(m)||0);
   },0);
-  const avg=confirmed.length?Math.round(budgetSum/confirmed.length):0;
+  const avg=priceData.length?Math.round(priceSum/priceData.length):0;
+  const budgetSum=priceSum; // use finalPrice sum for revenue
   // This month
   const now=new Date();
   const thisMonth=allBookings.filter(b=>{
@@ -980,7 +986,23 @@ function renderAnalytics(){
     return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();
   }).length;
   const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  document.getElementById('anaRevenue').textContent=budgetSum>0?'₹'+budgetSum.toLocaleString('en-IN'):'—';
+  document.getElementById('anaRevenue').textContent=budgetSum>0?'₹'+budgetSum.toLocaleString('en-IN'):'₹0 — Set final prices in confirmed bookings';
+  // Smart insight
+  const pendingPriceCount=confirmed.filter(b=>!b.finalPrice).length;
+  const totalConfirmed=confirmed.length;
+  let insightMsg='';
+  if(totalConfirmed===0){
+    insightMsg='No confirmed bookings yet. Confirm bookings and set final prices to see revenue.';
+  } else if(pendingPriceCount>0){
+    insightMsg='⚠️ '+pendingPriceCount+' of '+totalConfirmed+' confirmed booking'+(totalConfirmed>1?'s':'')+' missing final price. Open each booking → set Final Price to track real revenue.';
+  } else {
+    insightMsg='✓ All '+totalConfirmed+' confirmed booking'+(totalConfirmed>1?'s':'')+' have final prices. Revenue figure is accurate.';
+  }
+  const el=document.getElementById('anaPendingPrice');
+  if(el){
+    el.textContent=insightMsg;
+    el.style.color=pendingPriceCount>0?'var(--yellow)':'var(--green)';
+  }
   document.getElementById('anaAvg').textContent=avg>0?'₹'+avg.toLocaleString('en-IN'):'—';
   document.getElementById('anaConv').textContent=conv+'%';
   document.getElementById('anaThisMonth').textContent=thisMonth;
@@ -1016,9 +1038,29 @@ function renderAnalytics(){
 }
 
 // ── KANBAN / PIPELINE ──
-const PIPELINE_STAGES=['New Enquiry','Consultation Scheduled','Proposal Sent','Confirmed','Completed'];
-const STAGE_COLORS=['var(--blue)','var(--purple)','var(--yellow)','var(--green)','var(--t3)'];
+const PIPELINE_STAGES=['New Enquiry','Consultation Scheduled','Proposal Sent','Confirmed','Completed','Declined'];
+const STAGE_COLORS=['var(--blue)','var(--purple)','var(--yellow)','var(--green)','var(--t3)','var(--red)'];
+function autoStageBookings(){
+  // Auto-update pipeline stage based on status and event date
+  const today = new Date().toISOString().split('T')[0];
+  allBookings.forEach(b => {
+    // Sync declined status to Declined pipeline
+    if(b.status === 'declined' && b.pipeline !== 'Declined') {
+      b.pipeline = 'Declined';
+    }
+    // Auto-move Confirmed → Completed if event date has passed
+    if(b.status === 'confirmed' && b.pipeline === 'Confirmed' && b.eventDate && b.eventDate < today) {
+      b.pipeline = 'Completed';
+      b.status = 'completed';
+    }
+    // New bookings default to New Enquiry
+    if(!b.pipeline) b.pipeline = 'New Enquiry';
+    if(!b.status) b.status = 'pending';
+  });
+}
+
 function renderKanban(){
+  autoStageBookings();
   const board=document.getElementById('kanbanBoard');
   board.innerHTML=PIPELINE_STAGES.map((stage,si)=>{
     const cards=allBookings.filter(b=>(b.pipeline||'New Enquiry')===stage);
@@ -1041,7 +1083,9 @@ window.dropOnStage=async(e,stage,col)=>{
   const idx=allBookings.findIndex(b=>b.id===draggedCardId);
   if(idx>-1) allBookings[idx].pipeline=stage;
   // Auto update status for Confirmed/Completed stages
-  if(stage==='Confirmed'){ allBookings[idx].status='confirmed'; await updateDoc(doc(db,'bookings',draggedCardId),{status:'confirmed'}); sendBookingNotification(draggedCardId,'confirmed'); }
+  if(stage==='Confirmed'){ allBookings[idx].status='confirmed'; await updateDoc(doc(db,'bookings',draggedCardId),{status:'confirmed',pipeline:'Confirmed'}); sendBookingNotification(draggedCardId,'confirmed'); }
+  else if(stage==='Declined'){ allBookings[idx].status='declined'; await updateDoc(doc(db,'bookings',draggedCardId),{status:'declined',pipeline:'Declined'}); sendBookingNotification(draggedCardId,'declined'); }
+  else if(stage==='Completed'){ allBookings[idx].status='completed'; await updateDoc(doc(db,'bookings',draggedCardId),{status:'completed',pipeline:'Completed'}); }
   renderKanban(); applyBkFilters(); updateBadges(); renderDashboard();
   showToast('Moved to '+stage+' ✓');
   draggedCardId=null;
@@ -1052,7 +1096,7 @@ function renderRows(tbodyId,data,short=false){
   const tbody=document.getElementById(tbodyId);
   if(!data.length){tbody.innerHTML=`<tr><td colspan="${short?6:8}" class="empty-rows">No bookings found.</td></tr>`;return;}
   tbody.innerHTML=data.map(b=>{
-    const sCls=b.status==='confirmed'?'bdg-confirmed':b.status==='declined'?'bdg-declined':b.status==='modified'?'bdg-modified':'bdg-pending';
+    const sCls=b.status==='confirmed'?'bdg-confirmed':b.status==='declined'?'bdg-declined':b.status==='completed'?'bdg-completed':b.status==='modified'?'bdg-modified':'bdg-pending';
     const dt=b.eventDate?new Date(b.eventDate).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}):' — ';
     const extra=short?'':`<td style="font-size:.75rem">${b.eventType||'—'}</td>`;
     const priceCol=short?'':`<td style="color:var(--gold);font-size:.75rem">${b.finalPrice||'—'}</td>`;
@@ -1062,7 +1106,7 @@ function renderRows(tbodyId,data,short=false){
       ${extra}<td style="white-space:nowrap;font-size:.75rem">${dt}</td>
       <td style="white-space:nowrap;font-size:.75rem">${b.budget||'—'}</td>
       ${priceCol}
-      <td><span class="bdg ${sCls}">${b.status||'pending'}</span></td>
+      <td><span class="bdg ${sCls}">${b.pipeline||b.status==='pending'?'New Enquiry':(b.status||'New Enquiry')}</span></td>
       <td><div class="act-btns">
         <button class="act-btn act-view" onclick="viewDetail('${b.id}')">View</button>
         ${b.status!=='confirmed'?`<button class="act-btn act-ok" onclick="updateStatus('${b.id}','confirmed')">✓</button>`:''}
@@ -1074,7 +1118,14 @@ function renderRows(tbodyId,data,short=false){
 
 function applyBkFilters(){
   let data=[...allBookings];
-  if(bkFilterStatus!=='all') data=data.filter(b=>b.status===bkFilterStatus);
+  if(bkFilterStatus!=='all'){
+    if(bkFilterStatus==='pending'){
+      // pending = New Enquiry stage
+      data=data.filter(b=>b.status==='pending'||b.status==='New Enquiry'||(!b.status&&!b.pipeline)||(b.pipeline==='New Enquiry'&&b.status!=='confirmed'&&b.status!=='declined'&&b.status!=='completed'));
+    } else {
+      data=data.filter(b=>b.status===bkFilterStatus);
+    }
+  }
   if(bkFilterEventType) data=data.filter(b=>b.eventType===bkFilterEventType);
   if(bkFilterService) data=data.filter(b=>b.service===bkFilterService);
   const search=(document.getElementById('globalSearch')?.value||'').toLowerCase();
@@ -1170,8 +1221,17 @@ window.viewDetail=id=>{
     </div>
     ${b.message?`<div class="dp-sec"><div class="dp-sec-ttl">Client's Vision</div><div style="font-size:.78rem;line-height:1.7;color:var(--t2)">${b.message}</div></div>`:''}
     <div class="dp-sec">
+      <div class="dp-sec-ttl">Assign Staff Member</div>
+      <div style="font-size:.72rem;color:var(--t3);margin-bottom:8px;">Assign a team member to manage this event.</div>
+      <select id="staffAssignSelect" class="lf-input" style="margin-bottom:8px;" onchange="assignStaffToBooking('${id}',this.value)">
+        <option value="">— Select Staff Member —</option>
+        ${allStaff.map(s=>`<option value="${s.name}" ${b.assignedStaff===s.name?'selected':''}>${s.name} (${s.role})</option>`).join('')}
+      </select>
+      ${b.assignedStaff?`<div style="font-size:.75rem;color:var(--green);">✓ Assigned to: <strong>${b.assignedStaff}</strong></div>`:''}
+    </div>
+    <div class="dp-sec">
       <div class="dp-sec-ttl">Status &amp; Actions</div>
-      <span class="bdg bdg-${b.status||'pending'}" style="font-size:.75rem;padding:5px 13px;display:inline-block;margin-bottom:12px">${b.status||'pending'}</span>
+      <span class="bdg bdg-${b.status||'pending'}" style="font-size:.75rem;padding:5px 13px;display:inline-block;margin-bottom:12px">${b.pipeline||b.status||'New Enquiry'}</span>
       <div class="dp-actions">
         <button class="dp-btn dp-ok" onclick="updateStatus('${id}','confirmed')">✓ Confirm</button>
         <button class="dp-btn dp-no" onclick="updateStatus('${id}','declined')">✕ Decline</button>
@@ -1192,15 +1252,10 @@ window.viewDetail=id=>{
       <textarea class="note-ta" id="noteTA" placeholder="Internal notes…">${b.adminNote||''}</textarea>
       <button class="note-save" onclick="saveNote('${id}')">Save Note</button>
     </div>
-    <div class="dp-sec">
-      <div class="dp-sec-ttl">Google Calendar</div>
-      ${b.eventDate?`<a href="${gcalLink(b)}" target="_blank" class="dp-btn dp-mod" style="text-decoration:none;display:inline-block;margin-top:4px;">📅 Add to Google Calendar</a>`:`<span style="font-size:.75rem;color:var(--t3)">Set an event date to generate calendar link.</span>`}
-    </div>`;
+`;
   document.getElementById('detailOv').classList.add('open');
 };
-function gcalLink(b){
-  const dt=b.eventDate?b.eventDate.replace(/-/g,''):'';
-  const title=encodeURIComponent(`AB Events: ${b.name||'Client'} - ${b.service||''}`);
+ - ${b.service||''}`);
   const details=encodeURIComponent(`Budget: ${b.budget||'—'}\nVenue: ${b.venue||'—'}\nPhone: ${b.phone||'—'}\nEmail: ${b.email||'—'}`);
   const loc=encodeURIComponent(b.venue||'Hyderabad');
   return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${dt}/${dt}&details=${details}&location=${loc}`;
@@ -1215,15 +1270,30 @@ window.saveFinalPrice=async(id)=>{
   showToast('Final price saved ✓');
   applyBkFilters();
 };
-window.openKanbanMove=(id)=>{
+window.openKanbanMove=async(id)=>{
   const b=allBookings.find(b=>b.id===id);
   if(!b) return;
   const current=b.pipeline||'New Enquiry';
-  const choice=prompt('Move to stage:\n0: New Enquiry\n1: Consultation Scheduled\n2: Proposal Sent\n3: Confirmed\n4: Completed\n\nCurrent: '+current+'\nEnter 0-4:');
-  if(choice===null) return;
+  const labels=PIPELINE_STAGES.map((s,i)=>i+': '+s).join('\n');
+  const choice=prompt('Move to stage:\n'+labels+'\n\nCurrent: '+current+'\nEnter number:');
+  if(choice===null||choice.trim()==='') return;
   const stage=PIPELINE_STAGES[parseInt(choice)];
-  if(stage){ window.dropOnStage({preventDefault:()=>{}},stage,{classList:{remove:()=>{}}}); draggedCardId=id; window.dropOnStage({preventDefault:()=>{}},stage,{classList:{remove:()=>{}}}); }
+  if(stage){
+    draggedCardId=id;
+    await window.dropOnStage({preventDefault:()=>{}},stage,{classList:{remove:()=>{}}});
+  }
 };
+window.assignStaffToBooking=async(id,staffName)=>{
+  if(!staffName) return;
+  try{
+    await updateDoc(doc(db,'bookings',id),{assignedStaff:staffName,updatedAt:serverTimestamp()});
+    const idx=allBookings.findIndex(b=>b.id===id);
+    if(idx>-1) allBookings[idx].assignedStaff=staffName;
+    showToast('Staff assigned: '+staffName+' ✓');
+    applyBkFilters();
+  }catch(e){showToast('Error assigning staff.');}
+};
+
 window.saveNote=async id=>{
   const note=document.getElementById('noteTA').value;
   await updateDoc(doc(db,'bookings',id),{adminNote:note});
