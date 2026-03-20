@@ -353,6 +353,10 @@ tbody tr:hover td{background:var(--s2);}
       <div class="l-err" id="loginErr"></div>
       <div style="text-align:center;"><button class="l-forgot-btn" onclick="switchAdminTab('forgot')">🔑 Forgot your password?</button></div>
       <div class="l-hint">Restricted to authorised administrators only.<br>Customer site: <a href="index.html">index.html ↗</a></div>
+      <div id="domainNotice" style="display:none;margin-top:14px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:6px;padding:12px 14px;font-size:.72rem;color:#FCA5A5;line-height:1.7;">
+        <strong>Domain not authorized?</strong><br>
+        Go to <strong>Firebase Console → Authentication → Settings → Authorized Domains</strong> and add your site's domain (e.g. <code style="background:rgba(0,0,0,.3);padding:1px 5px;border-radius:3px;">yourusername.github.io</code>).
+      </div>
     </div>
     <!-- REGISTER -->
     <div class="auth-panel" id="adminRegPanel">
@@ -740,15 +744,37 @@ onAuthStateChanged(auth,async user=>{
 
 // ── SIGN IN ──
 window.adminLogin=async()=>{
-  const el=document.getElementById('loginErr'); if(el) el.textContent='';
-  try{ await signInWithEmailAndPassword(auth,document.getElementById('adEmail').value.trim(),document.getElementById('adPwd').value); }
-  catch(e){ if(el) el.textContent=fe(e.code); }
+  const el=document.getElementById('loginErr');
+  const btn=document.querySelector('.lbtn');
+  if(el) el.textContent='';
+  const email=document.getElementById('adEmail').value.trim();
+  const pwd=document.getElementById('adPwd').value;
+  if(!email||!pwd){if(el) el.textContent='Please enter your email and password.';return;}
+  if(btn){btn.textContent='Signing in…';btn.disabled=true;}
+  try{
+    await signInWithEmailAndPassword(auth,email,pwd);
+  } catch(e){
+    console.error('Login error:',e.code, e.message);
+    const msg = e.code==='auth/unauthorized-domain'
+      ? '🔒 Domain not authorized — see instructions below.'
+      : e.code==='auth/network-request-failed'
+      ? '🌐 Network error. Check your internet connection.'
+      : fe(e.code)+' ('+e.code+')';
+    if(el) el.innerHTML=msg;
+    if(e.code==='auth/unauthorized-domain'){
+      const dn=document.getElementById('domainNotice');
+      if(dn) dn.style.display='block';
+    }
+  } finally {
+    if(btn){btn.textContent='Sign In to Dashboard →';btn.disabled=false;}
+  }
 };
 
 // ── REGISTER ──
 window.adminRegister=async()=>{
   const errEl=document.getElementById('regErr'),okEl=document.getElementById('regOk');
   if(errEl) errEl.textContent=''; if(okEl) okEl.innerHTML='';
+  errEl.innerHTML='<span style="color:var(--gold)">Creating account…</span>';
   const email=document.getElementById('regEmail').value.trim();
   const pwd=document.getElementById('regPwd').value;
   const pwd2=document.getElementById('regPwd2').value;
@@ -1466,8 +1492,9 @@ function updateBadges(){
   const p=allBookings.filter(b=>b.status==='pending').length;
   document.getElementById('pendingBadge').textContent=p;
 }
-function fe(c){const m={'auth/user-not-found':'No account found.','auth/wrong-password':'Incorrect password.','auth/invalid-credential':'Invalid email or password.','auth/email-already-in-use':'Email already registered.','auth/weak-password':'Password needs 6+ characters.','auth/too-many-requests':'Too many attempts. Try later.','auth/invalid-email':'Invalid email format.'};return m[c]||'Something went wrong.';}
+function fe(c){const m={'auth/user-not-found':'No account found with that email.','auth/wrong-password':'Incorrect password. Please try again.','auth/invalid-credential':'Invalid email or password.','auth/email-already-in-use':'This email is already registered.','auth/weak-password':'Password must be at least 6 characters.','auth/too-many-requests':'Too many failed attempts. Please wait a few minutes.','auth/invalid-email':'Please enter a valid email address.','auth/unauthorized-domain':'This domain is not authorized. Add it in Firebase Auth settings.','auth/network-request-failed':'Network error. Check your connection.','auth/operation-not-allowed':'Email/password login is not enabled. Enable it in Firebase Authentication.'};return m[c]||('Error: '+c);}
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);}
+window.fe=fe;
 window.saveSettings=async()=>{
   const name=document.getElementById('setName').value.trim();
   const pwd=document.getElementById('setPwd').value;
