@@ -689,8 +689,8 @@ footer{background:var(--dark);border-top:1px solid rgba(201,168,76,.1);padding:5
       <div id="authSt"></div>
       <div style="text-align:right;margin-top:10px;"><button class="back-link" onclick="switchTab('forgot')">Forgot password?</button></div>
       <div class="or-divider">or</div>
-      <button class="guest-btn" onclick="doGuestFromModal()">&#128100; Continue as Guest</button>
-      <div style="font-size:.68rem;color:var(--muted);text-align:center;margin-top:8px;line-height:1.6;">Guest mode lets you explore our website freely.<br>You will need to sign in to submit a booking.</div>
+      <button class="guest-btn" onclick="doGuestFromModal()">&#128065; Browse as Guest</button>
+      <div style="font-size:.68rem;color:var(--muted);text-align:center;margin-top:8px;line-height:1.6;">Explore our services and gallery as a guest.<br><strong style="color:var(--gold)">Sign in required to submit a booking.</strong></div>
     </div>
     <div class="a-panel" id="regPanel">
       <div class="fr"><div class="fg"><label class="fl">First Name</label><input class="fi" id="rFirst" placeholder="First"/></div><div class="fg"><label class="fl">Last Name</label><input class="fi" id="rLast" placeholder="Last"/></div></div>
@@ -788,7 +788,7 @@ footer{background:var(--dark);border-top:1px solid rgba(201,168,76,.1);padding:5
 <!-- ══ FIREBASE ══ -->
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail, updateProfile } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail, updateProfile, setPersistence, browserLocalStoragePersistence } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, collection, addDoc, query, where, getDocs, doc, updateDoc, serverTimestamp, onSnapshot, runTransaction } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -802,6 +802,8 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+// Explicitly set LOCAL persistence so user stays logged in across page refreshes and tab reopens
+setPersistence(auth, browserLocalStoragePersistence).catch(function(e){ console.warn('Auth persistence:', e); });
 window._db = db; window._auth = auth;
 
 let currentUser = null;
@@ -977,10 +979,21 @@ window.checkDuplicate = async () => {
 window.submitBooking = async (ev) => {
   ev.preventDefault();
   const user = auth.currentUser;
-  // BLOCK: Must be logged in — no guest booking allowed
+  // BLOCK: Must be logged in — guests cannot submit bookings
   if(!user){
-    showToast('Please sign in or create an account to book.');
-    openAuth('login');
+    // Show inline message in the form status area
+    const stEl = document.getElementById('bkSt');
+    if(stEl){
+      stEl.innerHTML = '<div style="background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.25);border-radius:4px;padding:14px 16px;margin-top:4px;">' +
+        '<div style="font-size:.85rem;color:var(--cream);font-weight:500;margin-bottom:10px;">&#128274; Please sign in to complete your booking</div>' +
+        '<div style="display:flex;gap:8px;flex-wrap:wrap;">' +
+        '<button onclick="openAuth('login')" style="background:var(--gold);color:#000;border:none;padding:9px 20px;border-radius:4px;font-size:.78rem;font-weight:600;cursor:pointer;font-family:var(--fb);">Sign In</button>' +
+        '<button onclick="openAuth('register')" style="background:transparent;border:1px solid rgba(201,168,76,.4);color:var(--gold);padding:9px 20px;border-radius:4px;font-size:.78rem;cursor:pointer;font-family:var(--fb);">Create Account</button>' +
+        '</div>' +
+        '<div style="font-size:.72rem;color:var(--muted);margin-top:8px;">Your form details are saved. Sign in and submit to confirm.</div>' +
+        '</div>';
+    }
+    document.getElementById('bkSt').scrollIntoView({behavior:'smooth', block:'center'});
     return;
   }
   const btn = document.getElementById('subBtn');
