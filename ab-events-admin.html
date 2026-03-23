@@ -448,7 +448,7 @@ tbody tr:hover td{background:var(--s2);}
         <div class="card"><div class="card-hdr"><div><div class="card-ttl">Bookings by Service</div><div class="card-sub">Demand breakdown</div></div></div><div class="card-body"><div class="mini-bar-chart" id="svcChart"></div></div></div>
         <div class="card"><div class="card-hdr"><div><div class="card-ttl">Status Overview</div></div></div><div class="card-body"><div class="donut-wrap" id="statusChart"></div></div></div>
       </div>
-      <div class="card"><div class="card-hdr"><div><div class="card-ttl">Recent Booking Requests</div><div class="card-sub">Latest 8</div></div><button class="tb-btn" onclick="showPanel('bookings',null)">View All →</button></div><div class="tbl-wrap"><table><thead><tr><th>Booking ID</th><th>Client</th><th>Service</th><th>Event Date</th><th>Budget</th><th>Status</th><th>Actions</th></tr></thead><tbody id="recentTbl"></tbody></table></div></div>
+      <div class="card"><div class="card-hdr"><div><div class="card-ttl">Recent Booking Requests</div><div class="card-sub">Latest 8</div></div><button class="tb-btn" onclick="showPanel('bookings',null)">View All →</button></div><div class="tbl-wrap"><table><thead><tr><th>Client</th><th>Service</th><th>Event Date</th><th>Budget</th><th>Status</th><th>Actions</th></tr></thead><tbody id="recentTbl"></tbody></table></div></div>
     </div>
 
     <!-- REVENUE ANALYTICS -->
@@ -514,7 +514,7 @@ tbody tr:hover td{background:var(--s2);}
           </select>
         </div>
         <div class="tbl-wrap">
-          <table><thead><tr><th>Booking ID</th><th>Client</th><th>Service</th><th>Event Type</th><th>Event Date</th><th>Budget</th><th>Final Price</th><th>Status</th><th>Actions</th></tr></thead>
+          <table><thead><tr><th>Client</th><th>Service</th><th>Event Type</th><th>Event Date</th><th>Budget</th><th>Final Price</th><th>Status</th><th>Actions</th></tr></thead>
           <tbody id="allTbl"><tr><td colspan="8" class="empty-rows">Loading…</td></tr></tbody></table>
         </div>
       </div>
@@ -720,12 +720,6 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db   = firebase.firestore();
 
-// ── AUTH PERSISTENCE: LOCAL keeps admin logged in across refreshes ──
-// Without this, Firebase defaults to SESSION persistence and logs out
-// during Firestore operations that internally refresh the auth token.
-auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
-  .catch(function(e){ console.warn('Persistence warning:', e.message); });
-
 // ── CLOUDINARY CONFIG ──
 // Replace YOUR_CLOUD_NAME with your Cloudinary cloud name from cloudinary.com
 var CLOUDINARY_CLOUD  = 'di0ihwmg0';
@@ -795,18 +789,19 @@ window.adminLogin = function() {
   if (btn) { btn.textContent = 'Signing in...'; btn.disabled = true; }
   auth.signInWithEmailAndPassword(email, pwd)
     .then(function() {
-      // success — onAuthStateChanged handles dashboard load
-      if (btn) { btn.textContent = 'Sign In to Dashboard'; btn.disabled = false; }
+      // success — onAuthStateChanged handles the rest
     })
     .catch(function(e) {
       console.error('Login error:', e.code, e.message);
       if (e.code === 'auth/unauthorized-domain') {
-        if (el) el.innerHTML = 'Domain not authorized. Add <b>' + location.hostname + '</b> to Firebase Console → Auth → Authorized Domains.';
+        if (el) el.innerHTML = 'Domain not authorized.<br>Go to <b>Firebase Console &rarr; Authentication &rarr; Settings &rarr; Authorized Domains</b> and add <b>' + location.hostname + '</b>';
         var dn = document.getElementById('domainNotice');
         if (dn) dn.style.display = 'block';
       } else {
         if (el) el.textContent = fe(e.code) + ' [' + e.code + ']';
       }
+    })
+    .finally(function() {
       if (btn) { btn.textContent = 'Sign In to Dashboard'; btn.disabled = false; }
     });
 };
@@ -1155,7 +1150,6 @@ function renderKanban() {
     var cardHtml = cards.map(function(b) {
       return '<div class="kb-card" draggable="true" ondragstart="dragCard(event,\'' + b.id + '\')" onclick="viewDetail(\'' + b.id + '\')">' +
         '<div class="kb-card-name">' + (b.name || b.userEmail || '—') + '</div>' +
-        (b.bookingId ? '<div style="font-family:monospace;font-size:.6rem;color:var(--gold);opacity:.8;margin-bottom:2px">' + b.bookingId + '</div>' : '') +
         '<div class="kb-card-svc">' + (b.service || '—').split(' ').slice(0, 3).join(' ') + '</div>' +
         '<div class="kb-card-date">&#128197; ' + (b.eventDate || 'Date TBD') + '</div></div>';
     }).join('');
@@ -1200,7 +1194,7 @@ window.openKanbanMove = function(id) {
 function renderRows(tbodyId, data, short) {
   var tbody = document.getElementById(tbodyId);
   if (!tbody) return;
-  if (!data.length) { tbody.innerHTML = '<tr><td colspan="' + (short ? 7 : 9) + '" class="empty-rows">No bookings found.</td></tr>'; return; }
+  if (!data.length) { tbody.innerHTML = '<tr><td colspan="' + (short ? 6 : 8) + '" class="empty-rows">No bookings found.</td></tr>'; return; }
   tbody.innerHTML = data.map(function(b) {
     var sCls = b.status === 'confirmed' ? 'bdg-confirmed' : b.status === 'declined' ? 'bdg-declined' : b.status === 'completed' ? 'bdg-completed' : b.status === 'modified' ? 'bdg-modified' : 'bdg-pending';
     var sLbl = b.pipeline || (b.status === 'pending' ? 'New Enquiry' : b.status || 'New Enquiry');
@@ -1209,8 +1203,7 @@ function renderRows(tbodyId, data, short) {
     var priceCol = short ? '' : '<td style="color:var(--gold);font-size:.75rem">' + (b.finalPrice || '—') + '</td>';
     var confirmBtn = b.status !== 'confirmed' && b.status !== 'completed' ? '<button class="act-btn act-ok" onclick="updateStatus(\'' + b.id + '\',\'confirmed\')">&#10003;</button>' : '';
     var declineBtn = b.status !== 'declined'  ? '<button class="act-btn act-no" onclick="updateStatus(\'' + b.id + '\',\'declined\')">&#10005;</button>' : '';
-    var bkBadge = '<td><span style="font-family:monospace;font-size:.67rem;color:var(--gold);background:rgba(201,168,76,.08);padding:2px 7px;border-radius:3px;letter-spacing:.04em">' + (b.bookingId || '—') + '</span></td>';
-    return '<tr>' + bkBadge + '<td><div class="cell-primary">' + (b.name || b.userEmail || '—') + '</div><div class="cell-sub">' + (b.email || '') + '</div></td>' +
+    return '<tr><td><div class="cell-primary">' + (b.name || b.userEmail || '—') + '</div><div class="cell-sub">' + (b.email || '') + '</div></td>' +
       '<td style="font-size:.75rem">' + (b.service || '—') + '</td>' +
       extra + '<td style="white-space:nowrap;font-size:.75rem">' + dt + '</td>' +
       '<td style="white-space:nowrap;font-size:.75rem">' + (b.budget || '—') + '</td>' +
@@ -1323,7 +1316,6 @@ window.viewDetail = function(id) {
     '<div class="dp-row"><span class="dp-key">Phone</span><span class="dp-val">' + (b.phone || '—') + '</span></div>' +
     '<div class="dp-row"><span class="dp-key">Type</span><span class="dp-val">' + (b.isGuest ? 'Guest' : 'Registered') + '</span></div></div>' +
     '<div class="dp-sec"><div class="dp-sec-ttl">Event Details</div>' +
-    '<div class="dp-row"><span class="dp-key">Booking ID</span><span class="dp-val" style="font-family:monospace;color:var(--gold);letter-spacing:.05em">' + (b.bookingId || '—') + '</span></div>' +
     '<div class="dp-row"><span class="dp-key">Service</span><span class="dp-val">' + (b.service || '—') + '</span></div>' +
     '<div class="dp-row"><span class="dp-key">Event Type</span><span class="dp-val">' + (b.eventType || '—') + '</span></div>' +
     '<div class="dp-row"><span class="dp-key">Event Date</span><span class="dp-val">' + dt + '</span></div>' +
