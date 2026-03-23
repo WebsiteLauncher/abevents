@@ -1033,7 +1033,7 @@ window.submitBooking = async (ev) => {
       pipeline:  'New Enquiry',
       createdAt: serverTimestamp()
     });
-    st.innerHTML = '<span class="s-ok">✓ Booking submitted! Booking ID: <strong style="font-family:monospace;color:var(--gold)">' + bookingId + '</strong> — We'll contact you within 24 hours.</span>';
+    st.innerHTML = '<span class="s-ok">✓ Booking submitted! Booking ID: <strong style="font-family:monospace;color:var(--gold)">' + bookingId + '</strong> — We\'ll contact you within 24 hours.</span>';
     document.getElementById('bkForm').reset();
     document.getElementById('budgetCustom').style.display = 'none';
     document.getElementById('dupWarn').style.display = 'none';

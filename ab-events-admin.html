@@ -723,8 +723,6 @@ const db   = firebase.firestore();
 // ── AUTH PERSISTENCE: LOCAL keeps admin logged in across refreshes ──
 // Without this, Firebase defaults to SESSION persistence and logs out
 // during Firestore operations that internally refresh the auth token.
-auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
-  .catch(function(e){ console.warn('Persistence warning:', e.message); });
 
 // ── CLOUDINARY CONFIG ──
 // Replace YOUR_CLOUD_NAME with your Cloudinary cloud name from cloudinary.com
@@ -758,7 +756,18 @@ var adminNotifList=[];
 // ════════════════════════════════════════════════════
 //  AUTH
 // ════════════════════════════════════════════════════
-auth.onAuthStateChanged(function(user) {
+// Auth state listener registered INSIDE setPersistence callback
+// to guarantee LOCAL persistence is active before any auth state fires.
+// This prevents admin logout during Firestore operations.
+auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+  .then(function() { _startAuthListener(); })
+  .catch(function(e) {
+    console.warn('Auth persistence warning:', e.message);
+    _startAuthListener();
+  });
+
+function _startAuthListener() {
+  auth.onAuthStateChanged(function(user) {
   if (user && ADMIN_EMAILS.includes(user.email)) {
     document.getElementById('loginScreen').classList.add('gone');
     document.getElementById('sbName').textContent   = user.displayName || user.email.split('@')[0];
@@ -778,8 +787,8 @@ auth.onAuthStateChanged(function(user) {
   } else {
     document.getElementById('loginScreen').classList.remove('gone');
   }
-});
-
+  });
+}
 function showLoginErr(msg) {
   var el = document.getElementById('loginErr');
   if (el) el.textContent = msg;
