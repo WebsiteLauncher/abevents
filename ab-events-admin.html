@@ -365,7 +365,7 @@ tbody tr:hover td{background:var(--s2);}
         <div class="lf-group"><label class="lf-label">Last Name</label><input class="lf-input" id="regLastName" placeholder="Last"/></div>
       </div>
       <div class="lf-group"><label class="lf-label">Email</label><input class="lf-input" type="email" id="regEmail" placeholder="admin@abevents.in"/></div>
-      <div class="lf-group"><label class="lf-label">Phone</label><input class="lf-input" id="regPhone" placeholder="+91 XXXXX XXXXX"/></div>
+      <div class="lf-group"><label class="lf-label">Phone</label><input class="lf-input" id="regPhone" placeholder="+91 XXXXX XXXXX" inputmode="tel" oninput="filterAdminPhone(this)" onkeypress="return blockNonPhone(event)"/></div>
       <div class="lf-group"><label class="lf-label">Password</label><input class="lf-input" type="password" id="regPwd" placeholder="Min. 6 chars" oninput="checkPwStrength(this.value)"/><div class="pw-bar" id="pwBar"></div><div class="pw-hint" id="pwHint"></div></div>
       <div class="lf-group"><label class="lf-label">Confirm Password</label><input class="lf-input" type="password" id="regPwd2" placeholder="Re-enter"/></div>
       <button class="lbtn" onclick="adminRegister()">Create Admin Account →</button>
@@ -448,7 +448,7 @@ tbody tr:hover td{background:var(--s2);}
         <div class="card"><div class="card-hdr"><div><div class="card-ttl">Bookings by Service</div><div class="card-sub">Demand breakdown</div></div></div><div class="card-body"><div class="mini-bar-chart" id="svcChart"></div></div></div>
         <div class="card"><div class="card-hdr"><div><div class="card-ttl">Status Overview</div></div></div><div class="card-body"><div class="donut-wrap" id="statusChart"></div></div></div>
       </div>
-      <div class="card"><div class="card-hdr"><div><div class="card-ttl">Recent Booking Requests</div><div class="card-sub">Latest 8</div></div><button class="tb-btn" onclick="showPanel('bookings',null)">View All →</button></div><div class="tbl-wrap"><table><thead><tr><th>Booking ID</th><th>Client</th><th>Service</th><th>Event Date</th><th>Budget</th><th>Status</th><th>Actions</th></tr></thead><tbody id="recentTbl"></tbody></table></div></div>
+      <div class="card"><div class="card-hdr"><div><div class="card-ttl">Recent Booking Requests</div><div class="card-sub">Latest 8</div></div><button class="tb-btn" onclick="showPanel('bookings',null)">View All →</button></div><div class="tbl-wrap"><table><thead><tr><th>Client</th><th>Service</th><th>Event Date</th><th>Budget</th><th>Status</th><th>Actions</th></tr></thead><tbody id="recentTbl"></tbody></table></div></div>
     </div>
 
     <!-- REVENUE ANALYTICS -->
@@ -514,7 +514,7 @@ tbody tr:hover td{background:var(--s2);}
           </select>
         </div>
         <div class="tbl-wrap">
-          <table><thead><tr><th>Booking ID</th><th>Client</th><th>Service</th><th>Event Type</th><th>Event Date</th><th>Budget</th><th>Final Price</th><th>Status</th><th>Actions</th></tr></thead>
+          <table><thead><tr><th>Client</th><th>Service</th><th>Event Type</th><th>Event Date</th><th>Budget</th><th>Final Price</th><th>Status</th><th>Actions</th></tr></thead>
           <tbody id="allTbl"><tr><td colspan="8" class="empty-rows">Loading…</td></tr></tbody></table>
         </div>
       </div>
@@ -624,7 +624,7 @@ tbody tr:hover td{background:var(--s2);}
               <option>Lighting Tech</option><option>Caterer</option><option>DJ / Music</option><option>Driver</option>
             </select>
           </div>
-          <div class="lf-group" style="margin-bottom:0;"><label class="lf-label">Phone</label><input class="lf-input" id="staffPhone" placeholder="+91 XXXXX XXXXX"/></div>
+          <div class="lf-group" style="margin-bottom:0;"><label class="lf-label">Phone</label><input class="lf-input" id="staffPhone" placeholder="+91 XXXXX XXXXX" inputmode="tel" oninput="filterAdminPhone(this)" onkeypress="return blockNonPhone(event)"/></div>
         </div>
         <button class="lbtn" style="max-width:200px;margin-top:12px;" onclick="addStaff()">Add Team Member →</button>
         <div id="staffMsg" style="font-size:.75rem;margin-top:8px;"></div>
@@ -720,10 +720,6 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db   = firebase.firestore();
 
-// ── AUTH PERSISTENCE: LOCAL keeps admin logged in across refreshes ──
-// Without this, Firebase defaults to SESSION persistence and logs out
-// during Firestore operations that internally refresh the auth token.
-
 // ── CLOUDINARY CONFIG ──
 // Replace YOUR_CLOUD_NAME with your Cloudinary cloud name from cloudinary.com
 var CLOUDINARY_CLOUD  = 'di0ihwmg0';
@@ -756,18 +752,7 @@ var adminNotifList=[];
 // ════════════════════════════════════════════════════
 //  AUTH
 // ════════════════════════════════════════════════════
-// Auth state listener registered INSIDE setPersistence callback
-// to guarantee LOCAL persistence is active before any auth state fires.
-// This prevents admin logout during Firestore operations.
-auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
-  .then(function() { _startAuthListener(); })
-  .catch(function(e) {
-    console.warn('Auth persistence warning:', e.message);
-    _startAuthListener();
-  });
-
-function _startAuthListener() {
-  auth.onAuthStateChanged(function(user) {
+auth.onAuthStateChanged(function(user) {
   if (user && ADMIN_EMAILS.includes(user.email)) {
     document.getElementById('loginScreen').classList.add('gone');
     document.getElementById('sbName').textContent   = user.displayName || user.email.split('@')[0];
@@ -787,8 +772,8 @@ function _startAuthListener() {
   } else {
     document.getElementById('loginScreen').classList.remove('gone');
   }
-  });
-}
+});
+
 function showLoginErr(msg) {
   var el = document.getElementById('loginErr');
   if (el) el.textContent = msg;
@@ -804,18 +789,19 @@ window.adminLogin = function() {
   if (btn) { btn.textContent = 'Signing in...'; btn.disabled = true; }
   auth.signInWithEmailAndPassword(email, pwd)
     .then(function() {
-      // success — onAuthStateChanged handles dashboard load
-      if (btn) { btn.textContent = 'Sign In to Dashboard'; btn.disabled = false; }
+      // success — onAuthStateChanged handles the rest
     })
     .catch(function(e) {
       console.error('Login error:', e.code, e.message);
       if (e.code === 'auth/unauthorized-domain') {
-        if (el) el.innerHTML = 'Domain not authorized. Add <b>' + location.hostname + '</b> to Firebase Console → Auth → Authorized Domains.';
+        if (el) el.innerHTML = 'Domain not authorized.<br>Go to <b>Firebase Console &rarr; Authentication &rarr; Settings &rarr; Authorized Domains</b> and add <b>' + location.hostname + '</b>';
         var dn = document.getElementById('domainNotice');
         if (dn) dn.style.display = 'block';
       } else {
         if (el) el.textContent = fe(e.code) + ' [' + e.code + ']';
       }
+    })
+    .finally(function() {
       if (btn) { btn.textContent = 'Sign In to Dashboard'; btn.disabled = false; }
     });
 };
@@ -1164,7 +1150,6 @@ function renderKanban() {
     var cardHtml = cards.map(function(b) {
       return '<div class="kb-card" draggable="true" ondragstart="dragCard(event,\'' + b.id + '\')" onclick="viewDetail(\'' + b.id + '\')">' +
         '<div class="kb-card-name">' + (b.name || b.userEmail || '—') + '</div>' +
-        (b.bookingId ? '<div style="font-family:monospace;font-size:.6rem;color:var(--gold);opacity:.8;margin-bottom:2px">' + b.bookingId + '</div>' : '') +
         '<div class="kb-card-svc">' + (b.service || '—').split(' ').slice(0, 3).join(' ') + '</div>' +
         '<div class="kb-card-date">&#128197; ' + (b.eventDate || 'Date TBD') + '</div></div>';
     }).join('');
@@ -1209,7 +1194,7 @@ window.openKanbanMove = function(id) {
 function renderRows(tbodyId, data, short) {
   var tbody = document.getElementById(tbodyId);
   if (!tbody) return;
-  if (!data.length) { tbody.innerHTML = '<tr><td colspan="' + (short ? 7 : 9) + '" class="empty-rows">No bookings found.</td></tr>'; return; }
+  if (!data.length) { tbody.innerHTML = '<tr><td colspan="' + (short ? 6 : 8) + '" class="empty-rows">No bookings found.</td></tr>'; return; }
   tbody.innerHTML = data.map(function(b) {
     var sCls = b.status === 'confirmed' ? 'bdg-confirmed' : b.status === 'declined' ? 'bdg-declined' : b.status === 'completed' ? 'bdg-completed' : b.status === 'modified' ? 'bdg-modified' : 'bdg-pending';
     var sLbl = b.pipeline || (b.status === 'pending' ? 'New Enquiry' : b.status || 'New Enquiry');
@@ -1218,8 +1203,7 @@ function renderRows(tbodyId, data, short) {
     var priceCol = short ? '' : '<td style="color:var(--gold);font-size:.75rem">' + (b.finalPrice || '—') + '</td>';
     var confirmBtn = b.status !== 'confirmed' && b.status !== 'completed' ? '<button class="act-btn act-ok" onclick="updateStatus(\'' + b.id + '\',\'confirmed\')">&#10003;</button>' : '';
     var declineBtn = b.status !== 'declined'  ? '<button class="act-btn act-no" onclick="updateStatus(\'' + b.id + '\',\'declined\')">&#10005;</button>' : '';
-    var bkBadge = '<td><span style="font-family:monospace;font-size:.67rem;color:var(--gold);background:rgba(201,168,76,.08);padding:2px 7px;border-radius:3px;letter-spacing:.04em">' + (b.bookingId || '—') + '</span></td>';
-    return '<tr>' + bkBadge + '<td><div class="cell-primary">' + (b.name || b.userEmail || '—') + '</div><div class="cell-sub">' + (b.email || '') + '</div></td>' +
+    return '<tr><td><div class="cell-primary">' + (b.name || b.userEmail || '—') + '</div><div class="cell-sub">' + (b.email || '') + '</div>' + (b.bookingId ? '<div style="font-size:.62rem;color:var(--gold);font-family:monospace;margin-top:2px;">🎫 ' + b.bookingId + '</div>' : '') + '</td>' +
       '<td style="font-size:.75rem">' + (b.service || '—') + '</td>' +
       extra + '<td style="white-space:nowrap;font-size:.75rem">' + dt + '</td>' +
       '<td style="white-space:nowrap;font-size:.75rem">' + (b.budget || '—') + '</td>' +
@@ -1242,7 +1226,7 @@ function applyBkFilters() {
   if (bkFilterEventType) data = data.filter(function(b) { return b.eventType === bkFilterEventType; });
   if (bkFilterService)   data = data.filter(function(b) { return b.service   === bkFilterService;   });
   var search = ((document.getElementById('globalSearch') || {}).value || '').toLowerCase();
-  if (search) data = data.filter(function(b) { return (b.name || b.email || b.service || b.eventType || '').toLowerCase().includes(search); });
+  if (search) data = data.filter(function(b) { return (b.name || b.email || b.service || b.eventType || b.bookingId || '').toLowerCase().includes(search); });
   if (bkFilterSort === 'date-asc')    data.sort(function(a, b) { return (a.createdAt && a.createdAt.seconds || 0) - (b.createdAt && b.createdAt.seconds || 0); });
   else if (bkFilterSort === 'event-asc')  data.sort(function(a, b) { return (a.eventDate || '') > (b.eventDate || '') ? 1 : -1; });
   else if (bkFilterSort === 'event-desc') data.sort(function(a, b) { return (a.eventDate || '') < (b.eventDate || '') ? 1 : -1; });
@@ -1325,14 +1309,25 @@ window.viewDetail = function(id) {
   }).join('');
   var staffDone = b.assignedStaff ? '<div style="font-size:.75rem;color:var(--green);">&#10003; Assigned: <strong>' + b.assignedStaff + '</strong></div>' : '';
 
+  // Decode booking ID into human-readable label
+  var _bkIdDecoded = '';
+  if (b.bookingId) {
+    var _evtMap = {'WED':'Wedding','REC':'Reception','ENG':'Engagement','SGT':'Sangeet','MEH':'Mehendi','BDY':'Birthday','CRP':'Corporate','ANV':'Anniversary','BSH':'Baby Shower','HWM':'Housewarming','NAM':'Naming Ceremony','FWL':'Farewell','EVT':'Event','DCR':'Decor','PHT':'Photography','MUS':'Music','LGT':'Lighting','MGT':'Management','MUL':'Multiple'};
+    var _pts = b.bookingId.split('-');
+    var _dec = (_evtMap[_pts[0]] || _pts[0] || '');
+    var _mn  = _pts[1] || '';
+    var _sq  = _pts[2] ? '#' + parseInt(_pts[2], 10) : '';
+    _bkIdDecoded = [_dec, _mn, _sq].filter(Boolean).join(' · ');
+  }
+
   document.getElementById('dpBody').innerHTML =
     '<div class="dp-sec"><div class="dp-sec-ttl">Client Information</div>' +
+    (b.bookingId ? '<div class="dp-row"><span class="dp-key">Booking ID</span><span class="dp-val" style="display:flex;flex-direction:column;gap:2px;"><span style="color:var(--gold);font-weight:700;font-family:monospace;letter-spacing:.08em;font-size:.9rem;">' + b.bookingId + '</span><span style="font-size:.68rem;color:var(--t3);">' + _bkIdDecoded + '</span></span></div>' : '') +
     '<div class="dp-row"><span class="dp-key">Name</span><span class="dp-val">' + (b.name || '—') + '</span></div>' +
     '<div class="dp-row"><span class="dp-key">Email</span><span class="dp-val">' + (b.email || '—') + '</span></div>' +
     '<div class="dp-row"><span class="dp-key">Phone</span><span class="dp-val">' + (b.phone || '—') + '</span></div>' +
-    '<div class="dp-row"><span class="dp-key">Type</span><span class="dp-val">' + (b.isGuest ? 'Guest' : 'Registered') + '</span></div></div>' +
+    '<div class="dp-row"><span class="dp-key">Type</span><span class="dp-val">' + (b.isGuest ? '👤 Guest' : '✅ Registered') + '</span></div></div>' +
     '<div class="dp-sec"><div class="dp-sec-ttl">Event Details</div>' +
-    '<div class="dp-row"><span class="dp-key">Booking ID</span><span class="dp-val" style="font-family:monospace;color:var(--gold);letter-spacing:.05em">' + (b.bookingId || '—') + '</span></div>' +
     '<div class="dp-row"><span class="dp-key">Service</span><span class="dp-val">' + (b.service || '—') + '</span></div>' +
     '<div class="dp-row"><span class="dp-key">Event Type</span><span class="dp-val">' + (b.eventType || '—') + '</span></div>' +
     '<div class="dp-row"><span class="dp-key">Event Date</span><span class="dp-val">' + dt + '</span></div>' +
@@ -1677,6 +1672,16 @@ document.addEventListener('click',function(e){
 });
 window.showPanel=showPanel;
 window.toggleSidebar=toggleSidebar;
+// ── PHONE VALIDATION ──
+window.blockNonPhone = function(e) {
+  if(e.key && e.key.length===1 && !/[0-9+\- ]/.test(e.key)){ e.preventDefault(); return false; }
+  return true;
+};
+window.filterAdminPhone = function(el) {
+  var cleaned = el.value.replace(/[^0-9+\- ]/g,'');
+  if(el.value !== cleaned) el.value = cleaned;
+};
+
 </script>
 </body>
 </html>
