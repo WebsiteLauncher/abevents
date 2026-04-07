@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>AB Events — Admin Dashboard</title>
+<title>HAPPENHAUS — Admin Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
 <!-- EmailJS for notifications -->
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
@@ -339,7 +339,7 @@ tbody tr:hover td{background:var(--s2);}
 <div id="loginScreen">
   <div class="login-wrap">
     <div class="login-chip">⚡ Admin Portal</div>
-    <div class="login-logo">AB Events &amp; Decors</div>
+    <div class="login-logo">HAPPENHAUS</div>
     <div class="login-sub">Administration Dashboard</div>
     <div class="auth-tabs" id="adminAuthTabs">
       <button class="auth-tab active" onclick="switchAdminTab('login')">Sign In</button>
@@ -1172,7 +1172,8 @@ window.dropOnStage = function(e, stage, col) {
     if (idx > -1) Object.assign(allBookings[idx], upd);
     renderKanban(); applyBkFilters(); updateBadges(); renderDashboard();
     showToast('Moved to ' + stage + ' \u2713');
-    if (stage === 'Confirmed' || stage === 'Declined') sendBookingNotification(draggedCardId, upd.status);
+    // Notify customer for every pipeline stage move
+    sendBookingNotification(draggedCardId, upd.status || 'pending', stage);
     draggedCardId = null;
   });
 };
@@ -1266,18 +1267,38 @@ window.updateStatus = function(id, status) {
     applyBkFilters(); renderDashboard(); updateBadges();
     showToast(status === 'confirmed' ? '✅ Booking confirmed!' : '✕ Booking declined.');
     if (curDetailId === id) viewDetail(id);
-    sendBookingNotification(id, status);
+    sendBookingNotification(id, status, status);
   }).catch(function(e) { showToast('Error: ' + e.message); });
 };
 
-function sendBookingNotification(bookingId, status) {
+function sendBookingNotification(bookingId, status, pipeline) {
   var bk = allBookings.find(function(b) { return b.id === bookingId; });
   if (!bk) return;
   if (bk.userId && bk.userId !== 'guest') {
-    var msg = status === 'confirmed'
-      ? 'Your booking for ' + (bk.service || 'your event') + ' on ' + (bk.eventDate || 'TBD') + ' has been confirmed!'
-      : 'Your booking for ' + (bk.service || 'your event') + ' has been declined. Please contact us for more info.';
-    db.collection('notifications').add({ userId: bk.userId, message: msg, bookingId: bookingId, read: false, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+    // Build a meaningful message for every pipeline stage
+    var stageLabel = pipeline || status;
+    var msgMap = {
+      'confirmed':              '✅ Your booking for ' + (bk.service||'your event') + ' has been Confirmed! We look forward to making your event extraordinary.',
+      'Confirmed':              '✅ Your booking for ' + (bk.service||'your event') + ' has been Confirmed! We look forward to making your event extraordinary.',
+      'declined':               '❌ Your booking for ' + (bk.service||'your event') + ' could not be accommodated. Please contact us to discuss alternatives.',
+      'Declined':               '❌ Your booking for ' + (bk.service||'your event') + ' could not be accommodated. Please contact us to discuss alternatives.',
+      'Consultation Scheduled': '📞 Your consultation for ' + (bk.service||'your event') + ' has been scheduled! Our team will call you shortly.',
+      'consultation':           '📞 Your consultation for ' + (bk.service||'your event') + ' has been scheduled! Our team will call you shortly.',
+      'Proposal Sent':          '📋 A customised proposal for your ' + (bk.service||'event') + ' has been prepared. Our team will share the details soon.',
+      'proposal':               '📋 A customised proposal for your ' + (bk.service||'event') + ' has been prepared. Our team will share the details soon.',
+      'completed':              '🎊 Your ' + (bk.service||'event') + ' booking is now marked as Completed. Thank you for choosing HAPPENHAUS!',
+      'Completed':              '🎊 Your ' + (bk.service||'event') + ' booking is now marked as Completed. Thank you for choosing HAPPENHAUS!'
+    };
+    var msg = msgMap[stageLabel] || msgMap[status] || ('Your booking status has been updated to: ' + (stageLabel || status));
+    db.collection('notifications').add({
+      userId: bk.userId,
+      message: msg,
+      bookingId: bookingId,
+      pipeline: stageLabel,
+      status: status,
+      read: false,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
   }
   if (EMAILJS_SERVICE_ID === 'YOUR_EMAILJS_SERVICE_ID') return;
   if (typeof emailjs !== 'undefined' && bk.email) {
